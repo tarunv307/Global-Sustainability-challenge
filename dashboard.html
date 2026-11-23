@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRIFORGE | Live Mine Safety Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page">
+    <header class="dashboard-header">
+        <a class="dashboard-brand" href="index.html" aria-label="Back to TRIFORGE home">
+            <span class="dashboard-brand__shield">△</span>
+            <span><strong>TRIFORGE</strong><small>SUBSENSE AI</small></span>
+        </a>
+        <div class="dashboard-header__status"><span></span> System online</div>
+        <button class="dashboard-menu" type="button" aria-label="Open dashboard menu">☰</button>
+        <div class="dashboard-user"><span class="dashboard-avatar">OP</span><span>Control Room<br><small>Operator</small></span></div>
+    </header>
+
+    <main class="dashboard-shell">
+        <aside class="dashboard-sidebar">
+            <p>MONITORING</p>
+            <a class="selected" href="#overview">▦ <span>Overview</span></a>
+            <a href="#sensors">◉ <span>Sensor network</span></a>
+            <a href="#alerts">△ <span>Alerts</span><b>3</b></a>
+            <a href="#reports">▤ <span>Reports</span></a>
+            <p>MANAGEMENT</p>
+            <a href="#settings">⚙ <span>Settings</span></a>
+            <a href="index.html">← <span>Public website</span></a>
+        </aside>
+
+        <section class="dashboard-main" id="overview">
+            <div class="dashboard-title-row">
+                <div><p class="eyebrow">LIVE MONITORING · 17 SEPTEMBER 2026</p><h1>Mine safety overview</h1><p class="subcopy">Central Coalfields · Barkakana sector</p></div>
+                <button class="export-button">↓ <span>Export report</span></button>
+            </div>
+
+            <div class="metric-grid" id="sensors">
+                <article class="metric-card accent-cyan"><span class="metric-icon">◉</span><p>Active sensors</p><strong>48<span>/ 50</span></strong><small class="positive">↑ 2 connected today</small></article>
+                <article class="metric-card accent-yellow"><span class="metric-icon">⌇</span><p>Surface deformation</p><strong>4.8<span> mm</span></strong><small class="neutral">Last 24 hours</small></article>
+                <article class="metric-card accent-red"><span class="metric-icon">△</span><p>Risk level</p><strong class="risk-text">Elevated</strong><small class="negative">3 active observations</small></article>
+                <article class="metric-card accent-green"><span class="metric-icon">◌</span><p>System health</p><strong>98.4<span>%</span></strong><small class="positive">All services operational</small></article>
+            </div>
+
+            <div class="dashboard-grid">
+                <article class="panel risk-map-panel">
+                    <div class="panel-heading"><div><p class="eyebrow">GIS RISK MAP</p><h2>Active monitoring area</h2></div><button class="panel-action">Expand ↗</button></div>
+                    <div class="mine-map" aria-label="Stylised mine risk map">
+                        <span class="map-label label-north">NORTH PIT</span><span class="map-label label-south">SOUTH SEAM</span>
+                        <span class="map-road road-one"></span><span class="map-road road-two"></span><span class="map-road road-three"></span>
+                        <span class="risk-pulse pulse-one"></span><span class="risk-pulse pulse-two"></span>
+                        <span class="map-pin pin-safe">●</span><span class="map-pin pin-watch">●</span><span class="map-pin pin-risk">▲</span><span class="map-pin pin-risk-two">▲</span>
+                        <div class="map-legend"><span><i class="legend-safe"></i> Normal</span><span><i class="legend-watch"></i> Watch</span><span><i class="legend-risk"></i> Elevated</span></div>
+                    </div>
+                </article>
+                <article class="panel trend-panel">
+                    <div class="panel-heading"><div><p class="eyebrow">DEFORMATION</p><h2>Ground movement trend</h2></div><button class="range-button">7 days⌄</button></div>
+                    <div class="chart"><div class="chart-grid"></div><svg viewBox="0 0 520 190" preserveAspectRatio="none" aria-label="Ground movement line chart"><defs><linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#35d7ff" stop-opacity=".34"/><stop offset="1" stop-color="#35d7ff" stop-opacity="0"/></linearGradient></defs><path d="M0 154 L58 141 L116 151 L174 123 L232 133 L290 91 L348 108 L406 66 L464 73 L520 27 V190 H0 Z" fill="url(#chartFill)"/><path d="M0 154 L58 141 L116 151 L174 123 L232 133 L290 91 L348 108 L406 66 L464 73 L520 27" fill="none" stroke="#35d7ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="chart-labels"><span>11 Sep</span><span>13 Sep</span><span>15 Sep</span><span>Today</span></div></div>
+                    <div class="trend-footer"><span><i></i> Cumulative movement</span><strong>+1.7 mm <em>vs previous period</em></strong></div>
+                </article>
+                <article class="panel alert-panel" id="alerts"><div class="panel-heading"><div><p class="eyebrow">PRIORITY QUEUE</p><h2>Recent alerts</h2></div><a href="#alerts">View all</a></div><ul class="alert-list"><li><span class="alert-severity high">!</span><div><strong>Elevated subsidence risk</strong><p>Sector B · Sensor cluster 07</p></div><time>8 min</time></li><li><span class="alert-severity medium">!</span><div><strong>Movement threshold crossed</strong><p>North pit · Node N-14</p></div><time>26 min</time></li><li><span class="alert-severity low">✓</span><div><strong>Sensor connection restored</strong><p>South seam · Node S-03</p></div><time>1 hr</time></li></ul></article>
+                <article class="panel sensor-panel"><div class="panel-heading"><div><p class="eyebrow">NETWORK STATUS</p><h2>Sensor health</h2></div><a href="#sensors">Manage</a></div><div class="sensor-bars"><div><span>LoRa nodes</span><b><i style="width:96%"></i></b><strong>24 / 25</strong></div><div><span>GNSS stations</span><b><i style="width:100%"></i></b><strong>12 / 12</strong></div><div><span>Tilt meters</span><b><i style="width:92%"></i></b><strong>12 / 13</strong></div></div></article>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TRIFORGE</title>
+
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ===== ADDITIONAL STYLES FOR NEW SECTIONS ===== */
+        .section-label {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: #d35400;
+            background: #fff3e0;
+            padding: 5px 16px;
+            border-radius: 30px;
+            margin-bottom: 12px;
+        }
+
+        /* Problem Section */
+        .problem-section {
+            padding: 70px 24px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c1810 100%);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .problem-section::before {
+            content: '⚠';
+            position: absolute;
+            font-size: 20rem;
+            opacity: 0.03;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #FFC928;
+        }
+        .problem-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        .problem-section .section-label {
+            background: rgba(255, 201, 40, 0.15);
+            color: #FFC928;
+        }
+        .problem-section h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 18px;
+            line-height: 1.2;
+        }
+        .problem-section h2 span { color: #FFC928; }
+        .problem-section p {
+            font-size: 1.05rem;
+            line-height: 1.75;
+            color: rgba(255, 255, 255, 0.78);
+            margin-bottom: 16px;
+            max-width: 900px;
+        }
+        .problem-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 32px;
+        }
+        .problem-stat {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 201, 40, 0.2);
+            border-radius: 14px;
+            padding: 20px 22px;
+            backdrop-filter: blur(6px);
+        }
+        .problem-stat strong {
+            display: flex;
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: #FFC928;
+            line-height: 1.1;
+        }
+        .problem-stat span {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .coalfields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 26px;
+        }
+        .coalfield-tag {
+            background: rgba(255, 201, 40, 0.12);
+            border: 1px solid rgba(255, 201, 40, 0.3);
+            color: #FFC928;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Solution 3-Layer */
+        .solution-section {
+            padding: 70px 24px;
+            background: #fafafa;
+        }
+        .solution-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .solution-heading {
+            text-align: center;
+            margin-bottom: 44px;
+        }
+        .solution-heading h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1a1a1a;
+        }
+        .solution-heading h2 span { color: #d35400; }
+        .solution-heading p {
+            color: #666;
+            margin-top: 10px;
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .solution-layers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 26px;
+        }
+        .layer-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 34px 26px 30px;
+            text-align: center;
+            border: 1px solid #eee;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .layer-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+        }
+        .layer-card.sense::before { background: linear-gradient(90deg, #40D9FF, #2a5f7a); }
+        .layer-card.think::before { background: linear-gradient(90deg, #FFC928, #d35400); }
+        .layer-card.act::before { background: linear-gradient(90deg, #2e7d32, #0fc27e); }
+        .layer-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.10);
+        }
+        .layer-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin: 0 auto 16px;
+        }
+        .layer-card.sense .layer-icon { background: #e3f6ff; color: #2a5f7a; }
+        .layer-card.think .layer-icon { background: #fff6e0; color: #d35400; }
+        .layer-card.act .layer-icon { background: #e6f9ee; color: #2e7d32; }
+        .layer-card h3 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+        .layer-card p {
+            font-size: 0.88rem;
+            color: #555;
+            line-height: 1.65;
+        }
+        .layer-meta {
+            margin-top: 14px;
+            font-size: 0.72rem;
+            color: #888;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        /* Hardware Section */
+        .hardware-section {
+            padding: 70px 24px;
+            background: linear-gradient(180deg, #f0ebe3 0%, #e8dfd3 100%);
+        }
+        .hardware-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .hardware-heading {
+            text-align: center;
+            margin-bottom: 44px;
+        }
+        .hardware-heading h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1a1a1a;
+        }
+        .hardware-heading h2 span { color: #d35400; }
+        .hardware-heading p {
+            color: #666;
+            margin-top: 10px;
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .hardware-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+        .hardware-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 22px 20px;
+            border: 1px solid #e8dfd3;
+            box-shadow: 0 4px 14px rgba(60, 40, 20, 0.05);
+            transition: all 0.3s ease;
+        }
+        .hardware-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 28px rgba(211, 84, 0, 0.12);
+            border-color: #FFC928;
+        }
+        .hardware-card .hw-icon {
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .hardware-card h4 {
+            font-size: 0.92rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+        .hardware-card .hw-purpose {
+            font-size: 0.78rem;
+            color: #666;
+            line-height: 1.55;
+            margin-bottom: 8px;
+        }
+        .hardware-card .hw-tag {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            background: #fff3e0;
+            color: #b84a00;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.3px;
+        }
+
+        /* AI Section */
+        .ai-section {
+            padding: 70px 24px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .ai-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .ai-heading {
+            text-align: center;
+            margin-bottom: 44px;
+        }
+        .ai-heading .section-label {
+            background: rgba(255, 201, 40, 0.15);
+            color: #FFC928;
+        }
+        .ai-heading h2 {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+        .ai-heading h2 span { color: #FFC928; }
+        .ai-heading p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 10px;
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .ai-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        .ai-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 201, 40, 0.18);
+            border-radius: 18px;
+            padding: 28px 24px;
+            backdrop-filter: blur(6px);
+            transition: all 0.3s ease;
+        }
+        .ai-card:hover {
+            border-color: #FFC928;
+            transform: translateY(-4px);
+            background: rgba(255, 201, 40, 0.05);
+        }
+        .ai-card .ai-num {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #FFC928;
+            opacity: 0.55;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+        .ai-card h3 {
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .ai-card p {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.72);
+            line-height: 1.65;
+        }
+        .risk-classification {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 36px;
+        }
+        .risk-level {
+            border-radius: 14px;
+            padding: 18px 20px;
+            border: 1px solid;
+        }
+        .risk-level.safe { background: rgba(46, 125, 50, 0.12); border-color: rgba(46, 125, 50, 0.4); }
+        .risk-level.warning { background: rgba(255, 201, 40, 0.10); border-color: rgba(255, 201, 40, 0.4); }
+        .risk-level.high { background: rgba(230, 126, 34, 0.12); border-color: rgba(230, 126, 34, 0.4); }
+        .risk-level.critical { background: rgba(192, 57, 43, 0.15); border-color: rgba(192, 57, 43, 0.5); }
+        .risk-level .rl-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            font-size: 0.92rem;
+            margin-bottom: 6px;
+        }
+        .risk-level .rl-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .risk-level.safe .rl-dot { background: #2e7d32; }
+        .risk-level.warning .rl-dot { background: #FFC928; }
+        .risk-level.high .rl-dot { background: #e67e22; }
+        .risk-level.critical .rl-dot { background: #c0392b; }
+        .risk-level .rl-desc {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
+        }
+
+        /* Platform Section */
+        .platform-section {
+            padding: 70px 24px;
+            background: #fff;
+        }
+        .platform-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .platform-heading {
+            text-align: center;
+            margin-bottom: 44px;
+        }
+        .platform-heading h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1a1a1a;
+        }
+        .platform-heading h2 span { color: #d35400; }
+        .platform-heading p {
+            color: #666;
+            margin-top: 10px;
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+        .platform-card {
+            background: #fafafa;
+            border-radius: 16px;
+            padding: 24px 22px;
+            border: 1px solid #eee;
+            transition: all 0.3s ease;
+        }
+        .platform-card:hover {
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(211, 84, 0, 0.08);
+            border-color: #FFC928;
+            transform: translateY(-4px);
+        }
+        .platform-card .p-icon {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .platform-card h4 {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+        .platform-card p {
+            font-size: 0.82rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Impact / Scalability Section */
+        .impact-section {
+            padding: 70px 24px;
+            background: linear-gradient(135deg, #f0ebe3 0%, #e8dfd3 100%);
+        }
+        .impact-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .impact-heading {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .impact-heading h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1a1a1a;
+        }
+        .impact-heading h2 span { color: #d35400; }
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 22px;
+        }
+        .impact-block {
+            background: #fff;
+            border-radius: 18px;
+            padding: 28px 24px;
+            border: 1px solid #e8dfd3;
+            box-shadow: 0 6px 20px rgba(60, 40, 20, 0.05);
+            transition: all 0.3s ease;
+        }
+        .impact-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 34px rgba(211, 84, 0, 0.10);
+        }
+        .impact-block .ib-icon {
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+        }
+        .impact-block h3 {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+        .impact-block p {
+            font-size: 0.85rem;
+            color: #555;
+            line-height: 1.65;
+        }
+        .impact-block ul {
+            list-style: none;
+            margin-top: 10px;
+        }
+        .impact-block ul li {
+            font-size: 0.82rem;
+            color: #555;
+            padding: 5px 0 5px 22px;
+            position: relative;
+            line-height: 1.5;
+        }
+        .impact-block ul li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 5px;
+            color: #d35400;
+            font-weight: 700;
+        }
+
+        /* Updated Workflow with UWB */
+        .workflow-flow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .flow-step {
+            background: #fff;
+            border-radius: 14px;
+            padding: 16px 22px;
+            border: 1px solid #eee;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s ease;
+        }
+        .flow-step:hover {
+            border-color: #FFC928;
+            box-shadow: 0 8px 22px rgba(255, 201, 40, 0.15);
+        }
+        .flow-step .fs-num {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            color: #FFC928;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .flow-step .fs-content {
+            flex: 1;
+        }
+        .flow-step .fs-content h4 {
+            font-size: 0.92rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 3px;
+        }
+        .flow-step .fs-content p {
+            font-size: 0.8rem;
+            color: #666;
+            line-height: 1.5;
+        }
+        .flow-arrow {
+            font-size: 1.4rem;
+            color: #d35400;
+            margin: 6px 0;
+            font-weight: 700;
+        }
+
+        /* Sensor list inside workflow */
+        .sensor-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .sensor-list span {
+            font-size: 0.68rem;
+            background: #fff3e0;
+            color: #b84a00;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        /* Team Section - keep from previous */
+        .team-container {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+            gap: 28px !important;
+            max-width: 1280px !important;
+            margin: 0 auto !important;
+            padding: 0 20px !important;
+        }
+        .team-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 24px 20px 22px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #eee;
+        }
+        .team-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 34px rgba(255, 201, 40, 0.18);
+        }
+        .team-card .member-photo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .team-card .member-photo a {
+            align-items: center;
+            display: flex;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #FFC928;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+        .team-card .member-photo a:hover {
+            transform: scale(1.06);
+            box-shadow: 0 6px 20px rgba(255, 201, 40, 0.5);
+        }
+        .team-card .member-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 30%;
+            display: block;
+        }
+        .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #FFC928 0%, #d35400 100%);
+            color: #fff;
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+        .team-card h3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+            letter-spacing: 0.4px;
+        }
+        .team-card .role {
+            display: inline-block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 14px;
+            border-radius: 30px;
+            margin-bottom: 10px;
+            letter-spacing: 0.3px;
+        }
+        .team-card .role.hardware-software { background: #fff3cd; color: #8a6d00; }
+        .team-card .role.hardware { background: #d1ecf1; color: #0c5460; }
+        .team-card .role.uiux { background: #f8d7da; color: #721c24; }
+        .team-card .role.ai { background: #e2d9f3; color: #4b2e83; }
+        .team-card .role.iot { background: #d4edda; color: #155724; }
+        .team-card .role.gis { background: #cce5ff; color: #004085; }
+        .team-card p {
+            font-size: 0.82rem;
+            color: #555;
+            line-height: 1.55;
+            margin-bottom: 14px;
+            min-height: 60px;
+        }
+        .team-card .skills {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+        }
+        .team-card .skills span {
+            font-size: 0.68rem;
+            background: #f5f5f5;
+            color: #333;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            border: 1px solid #e8e8e8;
+        }
+        .team-card .linkedin-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 12px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #0a66c2;
+            text-decoration: none;
+            padding: 5px 14px;
+            border-radius: 30px;
+            background: #eaf3fb;
+            transition: all 0.25s ease;
+        }
+        .team-card .linkedin-btn:hover {
+            background: #0a66c2;
+            color: #fff;
+            transform: translateY(-1px);
+        }
+        .team-card .linkedin-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        @media (max-width: 768px) {
+            .team-container {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+                gap: 18px !important;
+            }
+            .team-card .member-photo a { width: 100px; height: 100px; }
+            .avatar-placeholder { font-size: 2rem; }
+            .problem-section h2,
+            .solution-heading h2,
+            .hardware-heading h2,
+            .ai-heading h2,
+            .platform-heading h2,
+            .impact-heading h2 { font-size: 1.5rem; }
+        }
+        @media (max-width: 480px) {
+            .team-container { grid-template-columns: 1fr !important; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="#home" class="triforge-nav-brand" aria-label="TRIFORGE home">
+                <span class="triforge-nav-brand__mark" aria-hidden="true">△</span>
+                <span><strong>TRI<span>FORGE</span></strong><small>SUBSENSE AI</small></span>
+            </a>
+
+            <nav>
+                <a href="#home" class="active">Home</a>
+                <a href="#problem">Problem</a>
+                <a href="#solution">Solution</a>
+                <a href="#workflow">Workflow</a>
+                <a href="#hardware">Hardware</a>
+                <a href="#team">Team</a>
+                <a href="#mentor">Mentors</a>
+            </nav>
+
+            <a href="smart-coal-mine-monitoring.html" class="dashboard-btn">
+                📊 Live Dashboard
+            </a>
+        </div>
+    </header>
+
+
+
+    <!-- ================= HERO ================= -->
+
+    <section class="hero" id="home">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-left">
+                <h1>
+                    SubSense AI
+                    <span>Intelligent Mine Safeguard System</span>
+                </h1>
+                <h2>
+                    AI-Enabled Real-Time & Early Prediction with warning in Mine Subsidence
+                </h2>
+                <p>
+                    TRIFORGE combines IoT surface sensors, LoRa mesh communication,
+                    we detect microseismic events using geophone , Edge AI and GIS visualization to detect
+                    mine-ground hazards <strong>before</strong> they become critical.
+                    Built for India's underground coal mines — Jharia, Raniganj, Singareni.
+                </p>
+                <div class="hero-buttons">
+                    <a href="smart-coal-mine-monitoring.html" class="primary-btn">
+                        📊 View Live Dashboard →
+                    </a>
+                    <a href="#problem" class="secondary-btn">
+                        Explore Project
+                    </a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="mine-icon">
+                    <div class="mountain mountain-one"></div>
+                    <div class="mountain mountain-two"></div>
+                    <div class="sensor sensor-one">📡</div>
+                    <div class="sensor sensor-two">📍</div>
+                    <div class="drone">🚁</div>
+                    <div class="warning-box">
+                        <span>⚠</span>
+                        <div>
+                            <strong>RISK DETECTED</strong>
+                            <small>Ground deformation increasing</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ================= PROBLEM SECTION ================= -->
+
+    <section class="problem-section" id="problem">
+        <div class="problem-container">
+            <span class="section-label">THE PROBLEM</span>
+            <h2>
+                India Produces 700+ Million Tonnes of Coal.
+                <span>Subsidence is Detected AFTER the Damage.</span>
+            </h2>
+            <p>
+                When coal is removed from beneath the surface, the ground above slowly sinks —
+                this is <strong>subsidence</strong>. It cracks homes, farmlands, roads, and water
+                bodies above mine panels across India's coalfields.
+            </p>
+            <p>
+                Today, subsidence is detected <strong>after</strong> the damage begins — through manual
+                surveys and periodic inspections. There is <strong>no low-cost, real-time,
+                indigenous early warning system</strong>. That is the exact gap we aim to close.
+            </p>
+
+            <div class="problem-stats">
+                <div class="problem-stat">
+                    <strong>700M+</strong>
+                    <span>Tonnes coal/year</span>
+                </div>
+                <div class="problem-stat">
+                    <strong>100+</strong>
+                    <span>Coal mine panels</span>
+                </div>
+                <div class="problem-stat">
+                    <strong>6–12 days</strong>
+                    <span>Detection delay (current)</span>
+                </div>
+                <div class="problem-stat">
+                    <strong>Limited</strong>
+                    <span>Indigenous real-time systems</span>
+                </div>
+            </div>
+
+            <div class="coalfields">
+                <span class="coalfield-tag">📍 Jharia</span>
+                <span class="coalfield-tag">📍 Raniganj</span>
+                <span class="coalfield-tag">📍 Singareni</span>
+                <span class="coalfield-tag">📍 Korba</span>
+                <span class="coalfield-tag">📍 Talcher</span>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ================= SOLUTION - 3 LAYERS ================= -->
+
+    <section class="solution-section" id="solution">
+        <div class="solution-container">
+            <div class="solution-heading">
+                <span class="section-label">OUR SOLUTION</span>
+                <h2>SubSense AI — A <span>Three-Layer System</span></h2>
+                <p>
+                    Modular, offline-first, and scalable — from one panel to an entire coalfield.
+                    Data flows from ESP32 nodes → LoRa mesh → Edge hub → AI prediction → Alerts & Cloud dashboard.
+                </p>
+            </div>
+
+            <div class="solution-layers">
+                <div class="layer-card sense">
+                    <div class="layer-icon">📡</div>
+                    <h3>SENSE</h3>
+                    <p>
+                        A wireless mesh of low-cost smart sensor nodes placed on the surface
+                        above mine panels, monitoring ground behaviour 24/7.
+                    </p>
+                    <div class="layer-meta">ESP32 · Tilt · Vibration · Displacement · Gas · Piezometer · Geophone · TF tag</div>
+                </div>
+
+                <div class="layer-card think">
+                    <div class="layer-icon">🧠</div>
+                    <h3>THINK</h3>
+                    <p>
+                        An Edge-AI hub on a Rockchip processor that analyses all data
+                        <strong>offline</strong> — critical, because mine sites have poor internet.
+                    </p>
+                    <div class="layer-meta">Rockchip · LoRa · GNSS · Edge AI · LSTM</div>
+                </div>
+
+                <div class="layer-card act">
+                    <div class="layer-icon">🚨</div>
+                    <h3>ACT</h3>
+                    <p>
+                        Automatic SMS, email, and app alerts — plus a GIS dashboard
+                        showing live risk zones and worker locations.
+                    </p>
+                    <div class="layer-meta">SMS · Email · GIS · Siren · TF TAG Tracking</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ================= FULL SYSTEM WORKFLOW ================= -->
+
+    <section class="workflow-section" id="workflow">
+        <div class="section-heading">
+            <span class="section-label">PROPOSED SYSTEM WORKFLOW</span>
+            <h2>From Mine Area → <span>Evacuation</span></h2>
+            <p style="max-width:720px;margin:10px auto 0;color:#666;text-align:center;">
+                10-step workflow — from sensor installation to emergency response.
+            </p>
+        </div>
+
+        <div class="workflow-flow">
+
+            <div class="flow-step">
+                <div class="fs-num">1</div>
+                <div class="fs-content">
+                    <h4>Mine Area</h4>
+                    <p>Underground coal mine panels identified for monitoring.</p>
+                </div>
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step">
+                <div class="fs-num">2</div>
+                <div class="fs-content">
+                    <h4>Install Sensors at Critical Locations</h4>
+                    <div class="sensor-list">
+                        <span>Inclination / Tilt</span>
+                        <span>Vibration</span>
+                        <span>Displacement</span>
+                        <span>Gas (ZCE04B)</span>
+                        <span>Piezometer</span>
+                        <span>Geophone</span>
+                        <span>TF Tags</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step">
+                <div class="fs-num">3</div>
+                <div class="fs-content">
+                    <h4>Continuous Data Collection</h4>
+                    <p>Ground tilt · Displacement · Vibration/seismic · Gas concentration · Water pressure · Worker location</p>
+                </div>
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step">
+                <div class="fs-num">4</div>
+                <div class="fs-content">
+                    <h4>Wireless Communication</h4>
+                    <p>Sensor data → IoT Gateway (LoRa mesh) · UWB tags → Location/Tracking System</p>
+                </div>
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step">
+                <div class="fs-num">5</div>
+                <div class="fs-content">
+                    <h4>Central Monitoring Platform</h4>
+                    <p>Collects and stores all sensor data · Displays live mine conditions</p>
+                </div>
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step">
+                <div class="fs-num">6</div>
+                <div class="fs-content">
+                    <h4>AI-Based Risk Analysis</h4>
+                    <p>
+                        Combines multiple sensor readings and detects abnormal patterns.
+                        Example: High displacement + increasing tilt + abnormal vibration + high water pressure → <strong>Possible ground instability</strong>
+                    </p>
+                    <p style="margin-top:6px;font-size:0.75rem;color:#d35400;">
+                        <strong>Geophone Note:</strong> Seismic/vibration data → processing → estimated subsurface location/depth.
+                    </p>
+                </div>
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step">
+                <div class="fs-num">7</div>
+                <div class="fs-content">
+                    <h4>Risk Classification</h4>
+                    <div class="sensor-list" style="margin-top:6px;">
+                        <span style="background:#e6f9ee;color:#2e7d32;">🟢 SAFE → Normal monitoring</span>
+                        <span style="background:#fff6e0;color:#b84a00;">🟡 WARNING → Abnormal detected</span>
+                        <span style="background:#ffe8d6;color:#b84a00;">🟠 HIGH RISK → Prepare evacuation</span>
+                        <span style="background:#fde8e8;color:#b53b3b;">🔴 CRITICAL → Immediate alert</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step">
+                <div class="fs-num">8</div>
+                <div class="fs-content">
+                    <h4>Early Warning System</h4>
+                    <p>Siren/alarm · Control-room notification · Mobile/web alert · Hazard-zone indication</p>
+                </div>
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step">
+                <div class="fs-num">9</div>
+                <div class="fs-content">
+                    <h4>TF Tags</h4>
+                    <p>The system identifies which worker tracking. Enables zone-based evacuation..</p>
+                </div>
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step">
+                <div class="fs-num">10</div>
+                <div class="fs-content">
+                    <h4>Emergency Response</h4>
+                    <p>Alert → Identify affected zone → Locate workers → Evacuate workers → Monitor condition</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+
+
+    <!-- ================= HARDWARE SECTION ================= -->
+
+    <section class="hardware-section" id="hardware">
+        <div class="hardware-container">
+            <div class="hardware-heading">
+                <span class="section-label">HARDWARE</span>
+                <h2>Every Node is a <span>Complete Monitoring Station</span></h2>
+                <p>
+                    Fully indigenous components. One node costs a fraction of imported systems.
+                    Powered by battery + solar, with IP65 enclosure for harsh mine environments.
+                </p>
+            </div>
+
+            <div class="hardware-grid">
+                <div class="hardware-card">
+                    <span class="hw-icon">🔧</span>
+                    <h4>ESP32</h4>
+                    <div class="hw-purpose">Edge sensor controller with WiFi/BLE. Runs local sampling, filtering, and LoRa transmission.</div>
+                    <span class="hw-tag">Node Controller</span>
+                </div>
+
+                <div class="hardware-card">
+                    <span class="hw-icon">📐</span>
+                    <h4>Tilt Sensor</h4>
+                    <div class="hw-purpose">Measures ground inclination (pitch/roll) in degrees. Detects early surface tilt above mine panels.</div>
+                    <span class="hw-tag">Subsidence Indicator</span>
+                </div>
+
+                <div class="hardware-card">
+                    <span class="hw-icon">↔️</span>
+                    <h4>Displacement Sensor</h4>
+                    <div class="hw-purpose">Detects surface movement (mm level) — critical for tracking progressive ground shift.</div>
+                    <span class="hw-tag">Surface Movement</span>
+                </div>
+
+                <div class="hardware-card">
+                    <span class="hw-icon">🌊</span>
+                    <h4>Geophone + Vibration</h4>
+                    <div class="hw-purpose">Catches underground strata movement early. Seismic data → processing → estimated subsurface location/depth.</div>
+                    <span class="hw-tag">Seismic / Depth Est.</span>
+                </div>
+
+                <div class="hardware-card">
+                    <span class="hw-icon">💨</span>
+                    <h4>4-in-1 Gas Sensor (ZCE04B, RS485)</h4>
+                    <div class="hw-purpose">Detects methane migration — an early subsidence signature. Monitors CH₄, CO, O₂, H₂S.</div>
+                    <span class="hw-tag">Methane Migration</span>
+                </div>
+
+                <div class="hardware-card">
+                    <span class="hw-icon">💧</span>
+                    <h4>Piezometer</h4>
+                    <div class="hw-purpose">Monitors groundwater pressure below the surface. Rising pressure often precedes instability.</div>
+                    <span class="hw-tag">Water Pressure</span>
+                </div>
+
+                <div class="hardware-card">
+                    <span class="hw-icon">📏</span>
+                    <h4>Depth Sensor</h4>
+                    <div class="hw-purpose">Settlement profiling — tracks vertical settlement of the surface at the node location.</div>
+                    <span class="hw-tag">Settlement Profile</span>
+                </div>
+
+                <div class="hardware-card">
+                    <span class="hw-icon">📍</span>
+                    <h4>TF Tag Ranging</h4>
+                    <div class="hw-purpose">Centimetre-level node positioning + worker tracking. Enables zone-based evacuation.</div>
+                    <span class="hw-tag">Worker Tracking</span>
+                </div>
+
+                <div class="hardware-card">
+                    <span class="hw-icon">📡</span>
+                    <h4>LoRa Transceiver</h4>
+                    <div class="hw-purpose">Long-range, low-power communication — works underground with poor connectivity.</div>
+                    <span class="hw-tag">Mesh Network</span>
+                </div>
+
+                <div class="hardware-card">
+                    <span class="hw-icon">🛰</span>
+                    <h4>GNSS Module</h4>
+                    <div class="hw-purpose">Geolocation for each node — enables GIS mapping of sensor positions and risk zones.</div>
+                    <span class="hw-tag">Geolocation</span>
+                </div>
+
+                <div class="hardware-card">
+                    <span class="hw-icon">🔋</span>
+                    <h4>Battery + Solar</h4>
+                    <div class="hw-purpose">Continuous power for remote node deployment. Zero wired infrastructure required.</div>
+                    <span class="hw-tag">Power</span>
+                </div>
+
+                <div class="hardware-card">
+                    <span class="hw-icon">📦</span>
+                    <h4>IP65 Enclosure</h4>
+                    <div class="hw-purpose">Rugged, dust-proof, water-resistant housing with mounting holes for surface installation.</div>
+                    <span class="hw-tag">Protection</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ================= AI & PREDICTION SECTION ================= -->
+
+    <section class="ai-section" id="ai">
+        <div class="ai-container">
+            <div class="ai-heading">
+                <span class="section-label">AI & PREDICTION</span>
+                <h2>Monitoring Tells You What <span>Happened</span>.<br>Our AI Tells You What's <span>Coming</span>.</h2>
+                <p>
+                    Three AI models work together on the edge hub — running fully offline.
+                    No internet needed. No cloud dependency.
+                </p>
+            </div>
+
+            <div class="ai-grid">
+                <div class="ai-card">
+                    <div class="ai-num">01</div>
+                    <h3>Anomaly Detection</h3>
+                    <p>
+                        Flags abnormal tilt, vibration, or displacement instantly.
+                        Uses statistical + ML thresholds tuned to each sensor.
+                    </p>
+                </div>
+
+                <div class="ai-card">
+                    <div class="ai-num">02</div>
+                    <h3>Multi-Sensor Fusion</h3>
+                    <p>
+                        Cross-validates all streams — real subsidence shows <strong>correlated changes</strong>.
+                        This eliminates false alarms from vehicles, animals, or rain.
+                    </p>
+                </div>
+
+                <div class="ai-card">
+                    <div class="ai-num">03</div>
+                    <h3>LSTM Time-Series Prediction</h3>
+                    <p>
+                        Predicts the deformation trend and classifies every zone.
+                        Gives minutes to hours of warning before visible ground failure.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Risk Classification -->
+            <div class="risk-classification">
+                <div class="risk-level safe">
+                    <div class="rl-head"><span class="rl-dot"></span> 🟢 SAFE</div>
+                    <div class="rl-desc">Normal monitoring. No action required.</div>
+                </div>
+                <div class="risk-level warning">
+                    <div class="rl-head"><span class="rl-dot"></span> 🟡 WARNING</div>
+                    <div class="rl-desc">Abnormal condition detected. Increase sampling.</div>
+                </div>
+                <div class="risk-level high">
+                    <div class="rl-head"><span class="rl-dot"></span> 🟠 HIGH RISK</div>
+                    <div class="rl-desc">Prepare evacuation. Alert control room.</div>
+                </div>
+                <div class="risk-level critical">
+                    <div class="rl-head"><span class="rl-dot"></span> 🔴 CRITICAL</div>
+                    <div class="rl-desc">Immediate alert. Evacuate affected zone now.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ================= PLATFORM & ALERTS ================= -->
+
+    <section class="platform-section" id="platform">
+        <div class="platform-container">
+            <div class="platform-heading">
+                <span class="section-label">PLATFORM & ALERTS</span>
+                <h2>One Clear View: <span>Safe · Watch · Act</span></h2>
+                <p>
+                    Everything comes together on a web GIS dashboard — operators, planners,
+                    and regulators each get the view they need.
+                </p>
+            </div>
+
+            <div class="platform-grid">
+                <div class="platform-card">
+                    <div class="p-icon">👷</div>
+                    <h4>For Operators</h4>
+                    <p>Live node data and risk zones. Instant alerts on any abnormal condition.</p>
+                </div>
+                <div class="platform-card">
+                    <div class="p-icon">📊</div>
+                    <h4>For Planners</h4>
+                    <p>Deformation heat maps overlaid on mine panel layouts. Long-term trend analysis.</p>
+                </div>
+                <div class="platform-card">
+                    <div class="p-icon">📋</div>
+                    <h4>For Regulators</h4>
+                    <p>Trend history and audit reports. Full traceability of every alert and response.</p>
+                </div>
+                <div class="platform-card">
+                    <div class="p-icon">📱</div>
+                    <h4>SMS & Email Alerts</h4>
+                    <p>Triggered directly from the edge hub — <strong>no internet needed</strong>.</p>
+                </div>
+                <div class="platform-card">
+                    <div class="p-icon">💾</div>
+                    <h4>Offline Data Buffering</h4>
+                    <p>Data stored on SD card when offline. Automatic cloud sync when reconnected.</p>
+                </div>
+                <div class="platform-card">
+                    <div class="p-icon">🗺</div>
+                    <h4>Web GIS Dashboard</h4>
+                    <p>Mobile-friendly. Real-time charts, risk zones, and InSAR overlays.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ================= IMPACT & SCALABILITY ================= -->
+
+    <section class="impact-section" id="impact">
+        <div class="impact-container">
+            <div class="impact-heading">
+                <span class="section-label">IMPACT & SCALABILITY</span>
+                <h2>Low-Cost. Indigenous. <span>Scalable to Any Coalfield.</span></h2>
+            </div>
+
+            <div class="impact-grid">
+                <div class="impact-block">
+                    <div class="ib-icon">💰</div>
+                    <h3>Cost</h3>
+                    <p>A full panel-scale deployment for roughly <strong>LOW COST</strong> — using only indigenous components.</p>
+                    <ul>
+                      
+                        <li>Compared to <strong>crores</strong> for imported systems</li>
+                    </ul>
+                </div>
+
+                <div class="impact-block">
+                    <div class="ib-icon">📈</div>
+                    <h3>Scalability</h3>
+                    <p>Start with a pilot, expand to hundreds of nodes across India's coalfields.</p>
+                    <ul>
+                        <li>Modular sensor mesh</li>
+                        <li>Jharia · Raniganj · Korba · Singareni</li>
+                        <li>Same architecture for multiple mines</li>
+                    </ul>
+                </div>
+
+                <div class="impact-block">
+                    <div class="ib-icon">🌍</div>
+                    <h3>Impact</h3>
+                    <p>With early warning, mines can evacuate families, protect infrastructure, and plan responsibly.</p>
+                    <ul>
+                        <li>Save lives and livelihoods</li>
+                        <li>Reduce land degradation</li>
+                        <li>Extends to landslides, dams, tunnels</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ================= TEAM (5 MEMBERS) ================= -->
+
+    <section class="team-section" id="team">
+        <div class="section-heading">
+            <span class="section-label">THE TEAM</span>
+            <h2>Meet <span>TRIFORGE</span></h2>
+            <p>Five members. One mission — safer mining for India.</p>
+        </div>
+
+        <div class="team-container">
+
+            <!-- 1. TARUN V -->
+            <div class="team-card">
+                <div class="member-photo">
+                    <a href="https://www.linkedin.com/in/tarun-v-397202371/" target="_blank" rel="noopener noreferrer" aria-label="Tarun V LinkedIn">
+                        <img src="./image/tarun.jpeg" alt="Tarun V">
+                    </a>
+                </div>
+                <h3>TARUN V</h3>
+                <div class="role hardware-software"></div>
+                
+                
+                <a class="linkedin-btn" href="https://www.linkedin.com/in/tarun-v-397202371/" target="_blank" rel="noopener noreferrer">
+                    <svg viewBox="0 0 24 24"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
+                    LinkedIn
+                </a>
+            </div>
+
+            <!-- 2. ASWANTH SS -->
+            <div class="team-card">
+                <div class="member-photo">
+                    <a href="https://www.linkedin.com/in/aswanth-ss-9a8967375/" target="_blank" rel="noopener noreferrer" aria-label="Aswanth SS LinkedIn">
+                        <img src="./image/Screenshot 2026-09-05 at 3.15.56 AM.png" alt="Aswanth SS">
+                    </a>
+                </div>
+                <h3>ASWANTH SS</h3>
+                <div class="role hardware"></div>
+                
+                
+                <a class="linkedin-btn" href="https://www.linkedin.com/in/aswanth-ss-9a8967375/" target="_blank" rel="noopener noreferrer">
+                    <svg viewBox="0 0 24 24"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
+                    LinkedIn
+                </a>
+            </div>
+
+            <!-- 3. SARA REBECCA AJ -->
+            <div class="team-card">
+                <div class="member-photo">
+                    <a href="https://www.linkedin.com/in/sara-rebecca-aj-216497384/" target="_blank" rel="noopener noreferrer" aria-label="Sara Rebecca AJ LinkedIn">
+                        <img src="./image/sara.jpeg" alt="Sara Rebecca AJ">
+                    </a>
+                </div>
+                <h3>SARA REBECCA AJ</h3>
+                <div class="role ai"></div>
+               
+               
+                <a class="linkedin-btn" href="https://www.linkedin.com/in/sara-rebecca-aj-216497384/" target="_blank" rel="noopener noreferrer" aria-label="Sara Rebecca AJ LinkedIn">
+                    <svg viewBox="0 0 24 24"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
+                    LinkedIn
+                </a>
+            </div>
+
+            <!-- 4. AMBROSIYA A -->
+            <div class="team-card">
+                <div class="member-photo">
+                    <a href="https://www.linkedin.com/in/ambrosiya-a-b76776384/" target="_blank" rel="noopener noreferrer" aria-label="Ambrosiya A LinkedIn">
+                       <img src="./image/Ambrosiya.jpeg" alt="Ambrosiya A">
+                    </a>
+                </div>
+                <h3>AMBROSIYA A</h3>
+                <div class="role iot"></div>
+               
+                <a class="linkedin-btn" href="https://www.linkedin.com/in/ambrosiya-a-b76776384/" target="_blank" rel="noopener noreferrer" aria-label="Ambrosiya A LinkedIn">
+                    <svg viewBox="0 0 24 24"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
+                    LinkedIn
+                </a>
+            </div>
+
+            <!-- 5. VISWAJITH S -->
+            <div class="team-card">
+                <div class="member-photo">
+                    <a href="https://www.linkedin.com/in/viswajith-sabarigirinathan-588986383/" target="_blank" rel="noopener noreferrer" aria-label="Viswajith S LinkedIn">
+                        <img src="./image/viswajith.jpeg" alt="Viswajith S">
+                    </a>
+                </div>
+                <h3>VISWAJITH S</h3>
+                <div class="role gis"></div>
+            
+               
+                <a class="linkedin-btn" href="https://www.linkedin.com/in/viswajith-sabarigirinathan-588986383/" target="_blank" rel="noopener noreferrer" aria-label="Viswajith S LinkedIn">
+                    <svg viewBox="0 0 24 24"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
+                    LinkedIn
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+
+
+    <!-- ================= MENTORS ================= -->
+
+    <section class="team-section mentor-section" id="mentor">
+        <div class="section-heading">
+            <span class="section-label">GUIDANCE</span>
+            <h2>Our <span>Mentors</span></h2>
+            <p>Guiding us towards a safer technological future.</p>
+        </div>
+
+        <div class="mentor-container">
+            <div class="mentor-card">
+                <a href="https://www.linkedin.com/in/muthusamy-k-a7ba161b6/" target="_blank">
+                    <img src="./image/Muthusamy.png" alt="Muthusamy Sir">
+                </a>
+                <div>
+                    <h3>Muthusamy Sir</h3>
+                    <p>Mentor</p>
+                    <a href="https://www.linkedin.com/in/muthusamy-k-a7ba161b6/" target="_blank" class="linkedin">
+                        LinkedIn ↗
+                    </a>
+                </div>
+            </div>
+
+            <div class="mentor-card">
+                <a href="https://www.linkedin.com/in/er-gajendran-parthasarathi-9689a2109?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank">
+                    <img src="./image/gajendran sir .jpeg" alt="Gajendran Sir">
+                </a>
+                <div>
+                    <h3>Gajendran Sir</h3>
+                    <p>Mentor</p>
+                    <a href="https://www.linkedin.com/in/er-gajendran-parthasarathi-9689a2109?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" class="linkedin">
+                        LinkedIn ↗
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ================= DASHBOARD CTA ================= -->
+
+    <section class="dashboard-section">
+        <div class="dashboard-content">
+            <span class="section-label">REAL-TIME MONITORING</span>
+            <h2>Monitor Mine Risk <span>in Real Time.</span></h2>
+            <p>
+                Access sensor data, risk levels, deformation trends and alerts
+                through the TRIFORGE monitoring dashboard.
+            </p>
+            <div class="dashboard-actions">
+                <a href="smart-coal-mine-monitoring.html" class="primary-btn">
+                    📊 Open Live Dashboard →
+                </a>
+                <a href="https://wa.me/918825581494?text=Hi%20TRIFORGE%20team%2C%20I%20would%20like%20to%20know%20more%20about%20SubSense%20AI."
+                    class="whatsapp-btn" target="_blank" rel="noopener noreferrer">
+                    <svg viewBox="0 0 32 32" aria-hidden="true">
+                        <path d="M16 3.2a12.7 12.7 0 0 0-10.9 19.2L3.5 28.8l6.6-1.7A12.8 12.8 0 1 0 16 3.2Zm0 23.1a10.4 10.4 0 0 1-5.3-1.5l-.4-.2-3.9 1 1-3.8-.3-.4A10.4 10.4 0 1 1 16 26.3Zm5.7-7.8c-.3-.2-1.9-.9-2.2-1s-.5-.1-.7.2-.8 1-1 1.2-.4.2-.7 0a8.4 8.4 0 0 1-2.5-1.5 9.2 9.2 0 0 1-1.7-2.1c-.2-.3 0-.5.2-.6l.5-.6c.2-.2.2-.4.3-.6 0-.2-.7-1.7-1-2.3-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4s-1.2 1.1-1.2 2.8 1.2 3.4 1.3 3.7a12 12 0 0 0 4.6 4.2c.6.3 1 .5 1.4.6.6.2 1.1.1 1.6.1.5-.1 1.9-.8 2.2-1.5s.3-1.4.2-1.5c-.1-.1-.3-.2-.6-.4Z" />
+                    </svg>
+                    More Info on WhatsApp
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+        <div class="footer-main">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <div class="mini-logo">⚒</div>
+                    <div>
+                        <strong>TRIFORGE</strong>
+                        <small>SUBSENSE AI · SENSE • ANALYZE • PROTECT</small>
+                    </div>
+                </div>
+                <p>Intelligent technology for safer and more sustainable mining.</p>
+            </div>
+
+            <div class="footer-links">
+                <h3>Quick Links</h3>
+                <a href="#home">Home</a>
+                <a href="#problem">Problem</a>
+                <a href="#solution">Solution</a>
+                <a href="#workflow">Workflow</a>
+                <a href="#team">Team</a>
+            </div>
+
+            <div class="footer-links">
+                <h3>Technology</h3>
+                <a href="#hardware">IoT Sensors</a>
+                <a href="#hardware">LoRa Network</a>
+                <a href="#hardware">GNSS</a>
+                <a href="#ai">Edge AI</a>
+                <a href="#platform">GIS Dashboard</a>
+            </div>
+
+            <div class="footer-links">
+                <h3>Project</h3>
+                <span>Mine Safety</span>
+                <span>AI + IoT + TF Tags</span>
+                <span>TRIFORGE</span>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>© 2026 TRIFORGE | SubSense AI — Intelligent Mine Safeguard System</p>
+            <p>Built for a Safer Future • SENSE • PREDICT • PROTECT</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

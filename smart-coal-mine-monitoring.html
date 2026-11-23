@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Coal Mine Monitoring &amp; Early Warning System — Regional Digital Twin</title>
+<style>
+  :root{
+    --bg:#DCE6F2;
+    --navy:#12355B;
+    --section-blue:#1D4E89;
+    --accent:#2878C8;
+    --text:#263238;
+    --text2:#52606D;
+    --card:#FFFFFF;
+    --warn:#E08A00;
+    --crit:#D0342C;
+    --ok:#2E8B57;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);font-family:'Segoe UI',Arial,sans-serif;color:var(--text);overflow:hidden;}
+
+  /* ---------- TOP NAV ---------- */
+  #topnav{
+    height:56px;background:var(--navy);color:#fff;display:flex;align-items:center;
+    padding:0 14px;justify-content:space-between;z-index:50;position:relative;
+    box-shadow:0 2px 6px rgba(0,0,0,.25);gap:10px;
+  }
+  #topnav .title{font-weight:700;font-size:15px;letter-spacing:.4px;display:flex;align-items:center;gap:9px;white-space:nowrap;}
+  #topnav .title .dot{width:9px;height:9px;border-radius:50%;background:#3ddc84;display:inline-block;box-shadow:0 0 6px #3ddc84;}
+  #mineSelect{display:flex;gap:4px;background:rgba(255,255,255,.07);padding:4px;border-radius:6px;}
+  #mineSelect button{background:transparent;border:none;color:#cfe0f2;font-size:11.5px;font-weight:700;padding:6px 10px;border-radius:4px;cursor:pointer;letter-spacing:.3px;}
+  #mineSelect button.active{background:var(--accent);color:#fff;}
+  #mineSelect button:hover{color:#fff;}
+  #navlinks{display:flex;gap:4px;}
+  #navlinks button{
+    background:transparent;border:none;color:#cfe0f2;font-size:12px;font-weight:600;
+    padding:8px 10px;border-radius:4px;cursor:pointer;letter-spacing:.2px;
+  }
+  #navlinks button:hover{background:rgba(255,255,255,.08);color:#fff;}
+  #sysstatus{
+    font-size:12px;font-weight:700;padding:6px 10px;border-radius:4px;
+    background:rgba(255,255,255,.08);display:flex;align-items:center;gap:6px;white-space:nowrap;
+  }
+  #sysstatus.ok{color:#7CFFB2;}
+  #sysstatus.warn{color:#FFC46B;}
+  #sysstatus.crit{color:#FF8A80;animation:blinktext 1s infinite;}
+  @keyframes blinktext{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+  /* ---------- LAYOUT ---------- */
+  #main{position:relative;height:calc(100% - 56px);display:flex;}
+  #viewport{flex:1;position:relative;overflow:hidden;background:#AFC7E0;}
+  #canvas3d{width:100%;height:100%;display:block;}
+  #gisCanvas{width:100%;height:100%;display:none;background:#EAF1F9;}
+
+  /* ---------- RIGHT DASHBOARD ---------- */
+  #dashboard{
+    width:352px;min-width:352px;background:var(--card);border-left:1px solid #c6d4e5;
+    overflow-y:auto;padding:14px 14px 30px 14px;
+  }
+  #dashboard h2{
+    font-size:13.5px;margin:0 0 10px 0;color:var(--navy);letter-spacing:.5px;
+    border-bottom:2px solid var(--accent);padding-bottom:8px;
+  }
+  #dashboard h3.sub{font-size:11.5px;color:var(--navy);letter-spacing:.4px;margin:16px 0 8px 0;}
+  .param{
+    background:#F5F8FC;border:1px solid #dfe7f0;border-radius:6px;padding:8px 10px;margin-bottom:8px;
+    display:grid;grid-template-columns:1fr auto;gap:2px;cursor:pointer;transition:.15s;
+  }
+  .param:hover{border-color:var(--accent);}
+  .param.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(40,120,200,.25);}
+  .param .pname{font-size:10.5px;font-weight:700;color:var(--text2);letter-spacing:.3px;grid-column:1/3;}
+  .param .pval{font-size:18px;font-weight:700;color:var(--navy);}
+  .param .punit{font-size:11px;color:var(--text2);align-self:flex-end;margin-left:3px;}
+  .param .pstatus{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;justify-self:end;align-self:center;}
+  .pstatus.NORMAL{background:#E3F3E9;color:var(--ok);}
+  .pstatus.WARNING{background:#FCEBD5;color:var(--warn);}
+  .pstatus.CRITICAL{background:#FBDFDD;color:var(--crit);animation:blinktext 1s infinite;}
+  .trend{font-size:11px;margin-left:6px;}
+  .trend.up{color:var(--crit);}
+  .trend.down{color:var(--ok);}
+  .trend.flat{color:var(--text2);}
+
+  #sysGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:6px;}
+  .sysCard{background:#F5F8FC;border:1px solid #dfe7f0;border-radius:6px;padding:7px 9px;}
+  .sysCard .sLabel{font-size:9.5px;font-weight:700;color:var(--text2);letter-spacing:.3px;}
+  .sysCard .sVal{font-size:13.5px;font-weight:700;color:var(--navy);margin-top:2px;}
+  .sysCard .sVal.crit{color:var(--crit);}
+  .sysCard .sVal.warn{color:var(--warn);}
+  .sysCard .sVal.ok{color:var(--ok);}
+
+  #aiml{
+    background:#F5F8FC;border:1px solid #dfe7f0;border-radius:6px;padding:10px;margin:6px 0 14px 0;
+  }
+  #aiml h3{margin:0 0 6px 0;font-size:12px;color:var(--navy);}
+  #riskbarOuter{height:10px;background:#e2e9f1;border-radius:6px;overflow:hidden;margin:8px 0;}
+  #riskbarInner{height:100%;width:8%;background:var(--ok);transition:width .5s linear,background .5s linear;}
+  #risklabel{font-size:12.5px;font-weight:700;color:var(--navy);}
+  #riskclass{font-size:11px;color:var(--text2);margin-top:2px;}
+  #aitext{font-size:11px;color:var(--text2);margin-top:6px;line-height:1.4;}
+
+  #controlsbox{margin-top:6px;}
+  .btn{
+    display:block;width:100%;padding:10px;margin-bottom:8px;border:none;border-radius:5px;
+    font-weight:700;font-size:12px;letter-spacing:.3px;cursor:pointer;color:#fff;
+    background:var(--section-blue);transition:.15s;
+  }
+  .btn:hover{background:var(--accent);}
+  .btn.hazard{background:var(--crit);}
+  .btn.hazard:hover{background:#e6544c;}
+  .btn.mute{background:var(--text2);}
+  .btn.reset{background:var(--navy);}
+  .btn.demo{background:#3d6b3f;}
+  .btn.demo:hover{background:#4c824e;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  #camPresets{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+  #camPresets button{
+    flex:1 1 45%;background:#EDF2F8;border:1px solid #d3e0ee;color:var(--navy);
+    font-size:10px;font-weight:700;padding:7px 4px;border-radius:4px;cursor:pointer;
+  }
+  #camPresets button:hover{background:#dde9f7;}
+  #camPresets button.active{background:var(--navy);color:#fff;}
+
+  /* ---------- FLOATING PANELS on viewport ---------- */
+  .floatpanel{
+    position:absolute;background:rgba(255,255,255,.94);border:1px solid #c6d4e5;
+    border-radius:6px;padding:10px 12px;font-size:11px;box-shadow:0 3px 10px rgba(0,0,0,.15);
+    z-index:20;
+  }
+  #gatewayPanel{top:14px;left:14px;width:196px;}
+  #gatewayPanel h4{margin:0 0 6px 0;font-size:11px;color:var(--navy);}
+  #gatewayPanel .row{display:flex;justify-content:space-between;color:var(--text2);margin-bottom:2px;}
+  #gatewayPanel .row b{color:var(--text);}
+
+  #viewToggle{position:absolute;top:14px;right:14px;z-index:25;display:flex;background:#fff;border:1px solid #c6d4e5;border-radius:6px;overflow:hidden;}
+  #viewToggle button{border:none;background:#fff;color:var(--navy);font-size:11px;font-weight:700;padding:8px 12px;cursor:pointer;}
+  #viewToggle button.active{background:var(--navy);color:#fff;}
+
+  #modeToggle{position:absolute;top:58px;right:14px;z-index:25;display:flex;background:#fff;border:1px solid #c6d4e5;border-radius:6px;overflow:hidden;}
+  #modeToggle button{border:none;background:#fff;color:var(--navy);font-size:10.5px;font-weight:700;padding:7px 10px;cursor:pointer;}
+  #modeToggle button.active{background:var(--accent);color:#fff;}
+
+  #camControlsPanel{position:absolute;bottom:70px;left:14px;z-index:25;background:rgba(255,255,255,.94);border:1px solid #c6d4e5;border-radius:6px;padding:8px 10px;font-size:10px;color:var(--text2);max-width:230px;}
+  #camControlsPanel b{color:var(--navy);}
+
+  #resetCamBtn{position:absolute;bottom:14px;left:14px;z-index:25;}
+
+  #sensorInfoCard{
+    position:absolute;display:none;top:106px;left:14px;width:226px;z-index:30;
+  }
+  #sensorInfoCard h4{margin:0 0 6px 0;color:var(--navy);font-size:12px;letter-spacing:.3px;}
+  #sensorInfoCard .row{display:flex;justify-content:space-between;margin-bottom:3px;color:var(--text2);}
+  #sensorInfoCard .row b{color:var(--text);}
+  #sensorInfoCard .closeBtn{position:absolute;top:6px;right:8px;cursor:pointer;color:var(--text2);font-weight:700;}
+
+  #evacLegend{position:absolute;display:none;bottom:70px;right:14px;z-index:25;width:170px;}
+  #evacLegend .lrow{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:10.5px;color:var(--text2);}
+  #evacLegend .swatch{width:11px;height:11px;border-radius:3px;flex:none;}
+
+  .css2dlabel{
+    background:rgba(18,53,91,.85);color:#fff;padding:2px 6px;border-radius:3px;font-size:10px;
+    font-weight:600;white-space:nowrap;pointer-events:none;letter-spacing:.2px;
+  }
+  .css2dlabel.warn{background:rgba(224,138,0,.9);}
+  .css2dlabel.crit{background:rgba(208,52,44,.95);}
+  .css2dlabel.mine{background:rgba(18,53,91,.92);font-size:11px;padding:4px 9px;}
+  .css2dlabel.hidden{display:none;}
+
+  /* ---------- DATA FLOW BAR ---------- */
+  #dataflow{
+    position:absolute;left:14px;right:372px;bottom:14px;height:46px;background:rgba(255,255,255,.94);
+    border:1px solid #c6d4e5;border-radius:6px;display:flex;align-items:center;
+    padding:0 10px;gap:5px;font-size:9.5px;font-weight:700;color:var(--navy);z-index:22;overflow:hidden;
+  }
+  #dataflow .fnode{padding:5px 7px;background:#EDF2F8;border-radius:4px;white-space:nowrap;position:relative;}
+  #dataflow .fnode.pulse{background:var(--accent);color:#fff;}
+  #dataflow .arrow{color:var(--text2);}
+
+  /* ---------- ALERT MODAL ---------- */
+  #alertOverlay{
+    position:fixed;inset:0;background:rgba(20,10,10,.45);display:none;align-items:center;justify-content:center;z-index:100;
+  }
+  #alertBox{
+    background:#fff;border-top:6px solid var(--crit);border-radius:8px;width:400px;padding:20px 22px;
+    box-shadow:0 10px 40px rgba(0,0,0,.35);
+  }
+  #alertBox h2{margin:0 0 10px 0;color:var(--crit);font-size:17px;}
+  #alertBox .row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12.5px;color:var(--text2);}
+  #alertBox .row b{color:var(--text);}
+  #alertBox p.desc{font-size:12.5px;color:var(--text);line-height:1.5;}
+  #alertBox .closeAlert{margin-top:10px;}
+
+  #flashBorder{
+    position:absolute;inset:0;pointer-events:none;z-index:15;border:6px solid var(--crit);opacity:0;display:none;
+  }
+  #flashBorder.on{display:block;animation:flashb 1s infinite;}
+  @keyframes flashb{0%,100%{opacity:0;}50%{opacity:.85;}}
+
+  #demoBanner{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:40;background:rgba(18,53,91,.92);color:#fff;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:.3px;display:none;}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:#c6d4e5;border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div id="topnav">
+  <div class="title"><span class="dot"></span> SMART COAL MINE MONITORING — REGIONAL DIGITAL TWIN</div>
+  <div id="mineSelect">
+    <button data-mine="0" class="active">MINE SITE A</button>
+    <button data-mine="1">MINE SITE B</button>
+    <button data-mine="2">MINE SITE C</button>
+  </div>
+  <div id="navlinks">
+    <button data-target="3d">3D VIEW</button>
+    <button data-target="gis">GIS MAP</button>
+  </div>
+  <div id="sysstatus" class="ok">● SYSTEM ONLINE</div>
+</div>
+
+<div id="main">
+  <div id="viewport">
+    <canvas id="canvas3d"></canvas>
+    <canvas id="gisCanvas"></canvas>
+
+    <div id="flashBorder"></div>
+    <div id="demoBanner">PRESENTATION MODE — AUTOMATED WALKTHROUGH</div>
+
+    <div id="viewToggle">
+      <button id="btn3D" class="active">3D VIEW</button>
+      <button id="btnGIS">GIS VIEW</button>
+    </div>
+    <div id="modeToggle">
+      <button id="btnSurface" class="active">SURFACE MODE</button>
+      <button id="btnUnderground">UNDERGROUND MODE</button>
+    </div>
+
+    <div id="gatewayPanel" class="floatpanel">
+      <h4 id="gwMineName">MINE SITE A — EDGE NODE</h4>
+      <div class="row"><span>Data received</span><b id="rkReceived">1,204 pkt</b></div>
+      <div class="row"><span>Processing</span><b id="rkProc">Active</b></div>
+      <div class="row"><span>Edge latency</span><b id="rkLatency">38 ms</b></div>
+      <div class="row"><span>Status</span><b id="rkStatus" style="color:#2E8B57">ONLINE</b></div>
+    </div>
+
+    <div id="sensorInfoCard" class="floatpanel">
+      <span class="closeBtn" id="closeSensorCard">✕</span>
+      <h4 id="sicName">SENSOR</h4>
+      <div class="row"><span>Location</span></div>
+      <div class="row"><b id="sicLocation">—</b></div>
+      <div class="row"><span>Current</span><b id="sicValue">—</b></div>
+      <div class="row"><span>Status</span><b id="sicStatus">—</b></div>
+      <div class="row"><span>Last update</span><b id="sicTime">—</b></div>
+    </div>
+
+    <div id="evacLegend" class="floatpanel">
+      <div class="lrow"><span class="swatch" style="background:#2E8B57"></span> Safe Route</div>
+      <div class="lrow"><span class="swatch" style="background:#D0342C"></span> Hazard Zone</div>
+      <div class="lrow"><span class="swatch" style="background:#2878C8"></span> Assembly Point</div>
+      <div class="lrow"><span class="swatch" style="background:#12355B"></span> Emergency Exit</div>
+    </div>
+
+    <div id="camControlsPanel">
+      <b>Camera:</b> Drag = Rotate &nbsp;|&nbsp; Scroll = Zoom &nbsp;|&nbsp; Right-drag = Pan
+      <div id="camPresets">
+        <button data-preset="regional">Regional View</button>
+        <button data-preset="mineSite">Mine Site View</button>
+        <button data-preset="surface">Surface View</button>
+        <button data-preset="underground">Underground View</button>
+        <button data-preset="sensor">Sensor View</button>
+        <button data-preset="hazard">Hazard View</button>
+        <button data-preset="evacuation">Evacuation View</button>
+      </div>
+    </div>
+    <button id="resetCamBtn" class="btn" style="width:auto;padding:8px 14px;">Reset Camera</button>
+
+    <div id="dataflow">
+      <div class="fnode" data-n="0">UG SENSORS</div><div class="arrow">→</div>
+      <div class="fnode" data-n="1">LoRa LINK</div><div class="arrow">→</div>
+      <div class="fnode" data-n="2">SURFACE GATEWAY</div><div class="arrow">→</div>
+      <div class="fnode" data-n="3">RK3588 EDGE</div><div class="arrow">→</div>
+      <div class="fnode" data-n="4">FIREBASE/CLOUD</div><div class="arrow">→</div>
+      <div class="fnode" data-n="5">AI/ML ENGINE</div><div class="arrow">→</div>
+      <div class="fnode" data-n="6">GIS TWIN</div><div class="arrow">→</div>
+      <div class="fnode" data-n="7">EARLY WARNING</div>
+    </div>
+  </div>
+
+  <div id="dashboard">
+    <h2 id="dashTitle">LIVE MONITORING — MINE SITE A</h2>
+
+    <h3 class="sub">SYSTEM OVERVIEW</h3>
+    <div id="sysGrid">
+      <div class="sysCard"><div class="sLabel">SYSTEM STATUS</div><div class="sVal ok" id="sgStatus">ONLINE</div></div>
+      <div class="sysCard"><div class="sLabel">COMMUNICATION</div><div class="sVal ok" id="sgComm">LoRa STABLE</div></div>
+      <div class="sysCard"><div class="sLabel">ACTIVE SENSORS</div><div class="sVal" id="sgSensors">8 / 8</div></div>
+      <div class="sysCard"><div class="sLabel">ACTIVE ALERTS</div><div class="sVal" id="sgAlerts">0</div></div>
+      <div class="sysCard"><div class="sLabel">WORKERS MONITORED</div><div class="sVal" id="sgWorkers">14</div></div>
+      <div class="sysCard"><div class="sLabel">DATA PACKETS</div><div class="sVal" id="sgPackets">1,204</div></div>
+      <div class="sysCard"><div class="sLabel">EDGE LATENCY</div><div class="sVal" id="sgLatency">38 ms</div></div>
+      <div class="sysCard"><div class="sLabel">MINE ZONES</div><div class="sVal" id="sgZones">4</div></div>
+      <div class="sysCard" style="grid-column:1/3;"><div class="sLabel">EVACUATION STATUS</div><div class="sVal ok" id="sgEvac">NOT REQUIRED</div></div>
+    </div>
+
+    <h3 class="sub">SENSOR NETWORK — 8 SENSORS</h3>
+    <div id="paramList"></div>
+
+    <div id="aiml">
+      <h3>AI / ML MULTI-SENSOR RISK ENGINE</h3>
+      <div id="risklabel">Risk Score: <span id="riskval">8%</span> — <span id="riskLevelLabel">LOW</span></div>
+      <div id="riskbarOuter"><div id="riskbarInner"></div></div>
+      <div id="riskclass">Hazard Classification: <b id="riskclassval">None</b></div>
+      <div id="aitext">No abnormal pattern detected across the 8-sensor array.</div>
+    </div>
+
+    <div id="controlsbox">
+      <button id="btnHazard" class="btn hazard">SIMULATE HAZARD</button>
+      <button id="btnMute" class="btn mute" disabled>MUTE ALARM</button>
+      <button id="btnReset" class="btn reset">RESET SYSTEM</button>
+      <button id="btnDemo" class="btn demo">START PRESENTATION MODE</button>
+    </div>
+  </div>
+</div>
+
+<div id="alertOverlay">
+  <div id="alertBox">
+    <h2>⚠ HIGH RISK DETECTED</h2>
+    <p class="desc" id="alertDesc">Multi-sensor anomaly detected. Potential underground hazard identified.</p>
+    <div class="row"><span>Mine</span><b id="alMine">Mine Site A</b></div>
+    <div class="row"><span>Affected Zone</span><b id="alLocation">Zone B — Support Section</b></div>
+    <div class="row"><span>Trigger</span><b id="alTrigger">Displacement + Piezometer + Vibration</b></div>
+    <div class="row"><span>Risk</span><b id="alSeverity" style="color:#D0342C">HIGH</b></div>
+    <div class="row"><span>Recommended Action</span><b id="alAction">Evacuate affected zone</b></div>
+    <div class="row"><span>Time</span><b id="alTime">--:--:--</b></div>
+    <button class="btn closeAlert" id="closeAlertBtn">ACKNOWLEDGE</button>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+/* =========================================================
+   SENSOR TEMPLATE (exactly 8 sensors — applied per mine)
+   Local positions are relative to each mine's underground root.
+   ========================================================= */
+const SENSOR_TEMPLATE = [
+  { id:'gas',          name:'GAS SENSOR (CH₄)',    unit:'%',    normal:0.36, hazard:1.42, dp:2, local:{x:-20,y:0,  z:16},  zone:'vent', loc:'Ventilation Branch — Intake Zone' },
+  { id:'temp',         name:'TEMPERATURE SENSOR',  unit:'°C',   normal:24.8, hazard:31.5, dp:1, local:{x:-4, y:0,  z:-16}, zone:'work', loc:'Working Panel — Zone A2' },
+  { id:'humidity',     name:'HUMIDITY SENSOR',     unit:'%',    normal:58,   hazard:74,   dp:0, local:{x:16, y:-6, z:14},  zone:'deep', loc:'Deep Working Zone — Zone B' },
+  { id:'vibration',    name:'VIBRATION SENSOR',    unit:'mm/s', normal:1.6,  hazard:5.8,  dp:1, local:{x:-4, y:0,  z:-29}, zone:'work', loc:'Machinery Bay — Zone A2' },
+  { id:'tilt',         name:'TILT SENSOR',         unit:'°',    normal:0.8,  hazard:3.2,  dp:1, local:{x:16, y:-3, z:5},   zone:'deep', loc:'Structural Support Area — Zone B' },
+  { id:'displacement', name:'DISPLACEMENT SENSOR', unit:'mm',   normal:0.3,  hazard:8.6,  dp:1, local:{x:16, y:-6, z:24},  zone:'deep', loc:'Roof / Wall Stability — Zone B' },
+  { id:'piezometer',   name:'PIEZOMETER',          unit:'kPa',  normal:118,  hazard:186,  dp:0, local:{x:34, y:-10,z:-14}, zone:'geo',  loc:'Groundwater / Rock-Pressure Zone' },
+  { id:'seismic',      name:'SEISMIC SENSOR',      unit:'g',    normal:0.4,  hazard:1.9,  dp:1, local:{x:34, y:-10,z:-23}, zone:'geo',  loc:'Geological Monitoring Chamber' },
+];
+const WARN_FRAC = 0.45;
+const CRIT_FRAC = 0.80;
+function statusFor(s, current){
+  const range = s.hazard - s.normal;
+  const frac = range===0 ? 0 : Math.min(1, Math.max(0,(current - s.normal)/range));
+  if(frac >= CRIT_FRAC) return 'CRITICAL';
+  if(frac >= WARN_FRAC) return 'WARNING';
+  return 'NORMAL';
+}
+function colorForStatus(status){
+  if(status==='CRITICAL') return 0xD0342C;
+  if(status==='WARNING') return 0xE08A00;
+  return 0x2878C8;
+}
+
+/* =========================================================
+   MINE DEFINITIONS — geographically separated, independent sites
+   ========================================================= */
+const MINE_DEFS = [
+  { id:'A', name:'Mine Site A — Kondapalli Block', offset:{x:0,    z:0},    rotY:0,          workers:14, zones:4 },
+  { id:'B', name:'Mine Site B — Rampur Block',      offset:{x:980, z:-640}, rotY:0.35,       workers:11, zones:4 },
+  { id:'C', name:'Mine Site C — Nayagarh Block',    offset:{x:-880,z:760},  rotY:-1.15,      workers:9,  zones:4 },
+];
+const tunnelY = -14; // depth of underground root below surface (world Y)
+
+const MINES = []; // filled after build with {def, sensors[], surfaceGroup, undergroundGroup, hazardZoneMesh, evacTube, evacArrows, hazard state...}
+
+/* =========================================================
+   THREE.JS CORE SETUP
+   ========================================================= */
+const viewport = document.getElementById('viewport');
+const canvas = document.getElementById('canvas3d');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.domElement.style.position = 'absolute';
+labelRenderer.domElement.style.top = '0px';
+labelRenderer.domElement.style.left = '0px';
+labelRenderer.domElement.style.pointerEvents = 'none';
+viewport.appendChild(labelRenderer.domElement);
+
+function resize(){
+  const w = viewport.clientWidth, h = viewport.clientHeight;
+  renderer.setSize(w,h);
+  labelRenderer.setSize(w,h);
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+}
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xAFC7E0);
+
+const camera = new THREE.PerspectiveCamera(50, 1, 0.5, 6000);
+camera.position.set(70, 60, 110);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 4, 0);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.maxPolarAngle = Math.PI*0.495;
+controls.minDistance = 4;
+controls.maxDistance = 2400;
+
+/* ---- Lighting ---- */
+const hemi = new THREE.HemisphereLight(0xdfe9f5, 0x3a2f26, 0.95);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff3d6, 1.2);
+sun.position.set(400, 600, 200);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.left=-160; sun.shadow.camera.right=160;
+sun.shadow.camera.top=160; sun.shadow.camera.bottom=-160;
+sun.shadow.camera.far=1400;
+scene.add(sun);
+scene.add(new THREE.AmbientLight(0x445566,0.28));
+
+/* =========================================================
+   SHARED MATERIALS
+   ========================================================= */
+const M = {
+  ground: new THREE.MeshStandardMaterial({ color:0x8c9068, roughness:1 }),
+  pad: new THREE.MeshStandardMaterial({ color:0x9c9482, roughness:0.95 }),
+  road: new THREE.MeshStandardMaterial({ color:0x5a6066, roughness:0.9 }),
+  rock: new THREE.MeshStandardMaterial({ color:0x4a4640, roughness:1 }),
+  coal: new THREE.MeshStandardMaterial({ color:0x1c1c1e, roughness:0.85, metalness:0.1 }),
+  timber: new THREE.MeshStandardMaterial({ color:0x6b4a2b, roughness:0.9 }),
+  steel: new THREE.MeshStandardMaterial({ color:0x8b9096, metalness:0.6, roughness:0.4 }),
+  steelDark: new THREE.MeshStandardMaterial({ color:0x33383d, metalness:0.5, roughness:0.5 }),
+  yellow: new THREE.MeshStandardMaterial({ color:0xf1b414, roughness:0.6 }),
+  cabinWall: new THREE.MeshStandardMaterial({ color:0xe7edf3, roughness:0.8 }),
+  cabinRoof: new THREE.MeshStandardMaterial({ color:0x1D4E89, roughness:0.7 }),
+  vest: new THREE.MeshStandardMaterial({ color:0xff8c00, roughness:0.7 }),
+  helmet: new THREE.MeshStandardMaterial({ color:0xf3d54a, roughness:0.4 }),
+  skin: new THREE.MeshStandardMaterial({ color:0x8d6248, roughness:0.9 }),
+  navy: new THREE.MeshStandardMaterial({ color:0x12355B, roughness:0.6 }),
+  cable: new THREE.MeshStandardMaterial({ color:0x1a1a1a, roughness:0.7 }),
+  pipe: new THREE.MeshStandardMaterial({ color:0x9db0bd, metalness:0.4, roughness:0.5 }),
+  foliage: new THREE.MeshStandardMaterial({ color:0x4c6b3a, roughness:1 }),
+  trunk: new THREE.MeshStandardMaterial({ color:0x5a4530, roughness:1 }),
+  hill: new THREE.MeshStandardMaterial({ color:0x7f8a5e, roughness:1 }),
+};
+
+const worldRoot = new THREE.Group();
+scene.add(worldRoot);
+
+function makeTextPanel(lines, w=2.4,h=1.4, bg='#12355B', fg='#ffffff'){
+  const c = document.createElement('canvas'); c.width=256; c.height=Math.round(256*h/w);
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,c.width,c.height);
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth=6; ctx.strokeRect(3,3,c.width-6,c.height-6);
+  ctx.fillStyle = fg; ctx.font = 'bold 22px Arial'; ctx.textAlign='center';
+  lines.forEach((l,i)=> ctx.fillText(l, c.width/2, 40+i*30));
+  const tex = new THREE.CanvasTexture(c);
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({map:tex}));
+  return mesh;
+}
+function makeCss2dLabel(text, cls=''){
+  const div = document.createElement('div');
+  div.className = 'css2dlabel' + (cls?(' '+cls):'');
+  div.textContent = text;
+  return new CSS2DObject(div);
+}
+
+/* =========================================================
+   REGIONAL TERRAIN — large landscape spanning all mine sites
+   ========================================================= */
+function buildTerrainTexture(){
+  const c = document.createElement('canvas'); c.width=1024; c.height=1024;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#8f9468'; ctx.fillRect(0,0,1024,1024);
+  for(let i=0;i<900;i++){
+    const x=Math.random()*1024, y=Math.random()*1024, r=10+Math.random()*46;
+    const tones = ['#83885f','#9a9d74','#7d7458','#a3a880','#7c8560'];
+    ctx.fillStyle = tones[Math.floor(Math.random()*tones.length)];
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath(); ctx.ellipse(x,y,r,r*0.6,Math.random()*Math.PI,0,Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(10,10);
+  return tex;
+}
+const groundMat = new THREE.MeshStandardMaterial({ map: buildTerrainTexture(), roughness:1 });
+const REGION_W = 3400, REGION_D = 2800;
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(REGION_W, REGION_D, 1,1), groundMat);
+ground.rotation.x = -Math.PI/2;
+ground.position.set(60, 0, 60);
+ground.receiveShadow = true;
+worldRoot.add(ground);
+
+// scattered low hills (avoid mine pad footprints)
+function farFromMines(x,z,margin){
+  return MINE_DEFS.every(m=> Math.hypot(x-m.offset.x, z-m.offset.z) > margin);
+}
+for(let i=0;i<26;i++){
+  let x,z,tries=0;
+  do{ x = 60+(Math.random()-0.5)*REGION_W*0.92; z = 60+(Math.random()-0.5)*REGION_D*0.92; tries++; }
+  while(!farFromMines(x,z,140) && tries<20);
+  const r = 30+Math.random()*70;
+  const hill = new THREE.Mesh(new THREE.SphereGeometry(r,10,8,0,Math.PI*2,0,Math.PI*0.5), M.hill);
+  hill.position.set(x, -r*0.55, z);
+  hill.scale.y = 0.35+Math.random()*0.3;
+  hill.receiveShadow = true; hill.castShadow = true;
+  worldRoot.add(hill);
+}
+// scattered trees
+const treeTrunkGeo = new THREE.CylinderGeometry(0.6,0.9,4,6);
+const treeTopGeo = new THREE.ConeGeometry(3.2,7,7);
+for(let i=0;i<140;i++){
+  let x,z,tries=0;
+  do{ x = 60+(Math.random()-0.5)*REGION_W*0.9; z = 60+(Math.random()-0.5)*REGION_D*0.9; tries++; }
+  while(!farFromMines(x,z,95) && tries<20);
+  const trunk = new THREE.Mesh(treeTrunkGeo, M.trunk);
+  const top = new THREE.Mesh(treeTopGeo, M.foliage);
+  trunk.position.set(x,2,z); top.position.set(x,7,z);
+  trunk.castShadow = top.castShadow = true;
+  worldRoot.add(trunk, top);
+}
+// rocks
+const rockGeo = new THREE.DodecahedronGeometry(1.4,0);
+for(let i=0;i<70;i++){
+  let x,z,tries=0;
+  do{ x = 60+(Math.random()-0.5)*REGION_W*0.9; z = 60+(Math.random()-0.5)*REGION_D*0.9; tries++; }
+  while(!farFromMines(x,z,90) && tries<20);
+  const rock = new THREE.Mesh(rockGeo, M.rock);
+  rock.position.set(x,0.6,z);
+  rock.rotation.set(Math.random(),Math.random(),Math.random());
+  const s = 0.8+Math.random()*1.6;
+  rock.scale.set(s,s*0.7,s);
+  rock.castShadow = rock.receiveShadow = true;
+  worldRoot.add(rock);
+}
+// regional roads connecting mine sites (bent polylines, obviously long distances)
+function buildRegionalRoad(a,b){
+  const mid = { x:(a.x+b.x)/2 + (Math.random()-0.5)*160, z:(a.z+b.z)/2 + (Math.random()-0.5)*160 };
+  const pts = [new THREE.Vector3(a.x,0.15,a.z), new THREE.Vector3(mid.x,0.15,mid.z), new THREE.Vector3(b.x,0.15,b.z)];
+  const curve = new THREE.CatmullRomCurve3(pts);
+  const div = 40;
+  const roadPts = curve.getPoints(div);
+  for(let i=0;i<div;i++){
+    const p0=roadPts[i], p1=roadPts[i+1];
+    const len = p0.distanceTo(p1);
+    const seg = new THREE.Mesh(new THREE.PlaneGeometry(9,len+0.4), M.road);
+    seg.rotation.x = -Math.PI/2;
+    seg.position.set((p0.x+p1.x)/2, 0.14, (p0.z+p1.z)/2);
+    seg.rotation.z = -Math.atan2(p1.z-p0.z, p1.x-p0.x) + Math.PI/2;
+    seg.receiveShadow = true;
+    worldRoot.add(seg);
+  }
+}
+buildRegionalRoad(MINE_DEFS[0].offset, MINE_DEFS[1].offset);
+buildRegionalRoad(MINE_DEFS[0].offset, MINE_DEFS[2].offset);
+
+/* =========================================================
+   REUSABLE BUILDERS
+   ========================================================= */
+function makeTruck(color){
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(3.4,1.5,1.9), new THREE.MeshStandardMaterial({color, roughness:0.55, metalness:0.2}));
+  body.position.y = 1.25; body.castShadow=true;
+  const cab = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.8), M.steelDark);
+  cab.position.set(-1.6,1.5,0); cab.castShadow=true;
+  const bed = new THREE.Mesh(new THREE.BoxGeometry(2.0,1.0,2.0), M.steel);
+  bed.position.set(1.0,2.1,0); bed.castShadow=true;
+  g.add(body,cab,bed);
+  const wheelGeo = new THREE.CylinderGeometry(0.55,0.55,0.55,14);
+  [[-1.2,-0.9],[-1.2,0.9],[1.2,-0.9],[1.2,0.9]].forEach(([x,z])=>{
+    const w = new THREE.Mesh(wheelGeo, M.steelDark);
+    w.rotation.z = Math.PI/2; w.position.set(x,0.55,z); w.castShadow=true;
+    g.add(w);
+  });
+  return g;
+}
+function makeExcavator(){
+  const g = new THREE.Group();
+  const tracks = new THREE.Mesh(new THREE.BoxGeometry(3.4,0.6,2.4), new THREE.MeshStandardMaterial({color:0x22252a}));
+  tracks.position.y=0.3; tracks.castShadow=true;
+  const cab = new THREE.Mesh(new THREE.BoxGeometry(1.7,1.3,1.7), M.yellow);
+  cab.position.set(-0.2,1.55,0); cab.castShadow=true;
+  const boom = new THREE.Mesh(new THREE.BoxGeometry(3.6,0.4,0.4), M.yellow);
+  boom.position.set(1.7,2.1,0); boom.rotation.z = 0.5; boom.castShadow=true;
+  const stick = new THREE.Mesh(new THREE.BoxGeometry(2.3,0.32,0.32), M.yellow);
+  stick.position.set(3.8,1.15,0); stick.rotation.z = -0.9; stick.castShadow=true;
+  const bucket = new THREE.Mesh(new THREE.BoxGeometry(0.85,0.6,0.95), M.steelDark);
+  bucket.position.set(4.5,0.2,0); bucket.castShadow=true;
+  g.add(tracks,cab,boom,stick,bucket);
+  return g;
+}
+function makeWorker(vestColor=0xff8c00, scaleF=1){
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.28,0.7,4,8), new THREE.MeshStandardMaterial({color:vestColor}));
+  body.position.y=0.85; body.castShadow=true;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.22,12,12), M.skin);
+  head.position.y=1.42; head.castShadow=true;
+  const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.25,12,12,0,Math.PI*2,0,Math.PI*0.62), M.helmet);
+  helmet.position.y=1.5; helmet.castShadow=true;
+  const legs = new THREE.Mesh(new THREE.CylinderGeometry(0.24,0.2,0.7,8), new THREE.MeshStandardMaterial({color:0x2b3a4a}));
+  legs.position.y=0.35; legs.castShadow=true;
+  const boots = new THREE.Mesh(new THREE.BoxGeometry(0.55,0.16,0.32), M.steelDark);
+  boots.position.y=0.02; boots.castShadow=true;
+  g.add(body,head,helmet,legs,boots);
+  g.scale.set(scaleF,scaleF,scaleF);
+  return g;
+}
+function makeBuilding(w,d,h,wallCol=0xe7edf3,roofCol=0x1D4E89){
+  const g = new THREE.Group();
+  const walls = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), new THREE.MeshStandardMaterial({color:wallCol, roughness:0.8}));
+  walls.position.y=h/2; walls.castShadow=true; walls.receiveShadow=true;
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(w+0.6,0.4,d+0.5), new THREE.MeshStandardMaterial({color:roofCol, roughness:0.7}));
+  roof.position.y=h+0.2; roof.castShadow=true;
+  const door = new THREE.Mesh(new THREE.PlaneGeometry(1,2), new THREE.MeshStandardMaterial({color:0x223142}));
+  door.position.set(0,1,d/2+0.01);
+  g.add(walls,roof,door);
+  return g;
+}
+function makeTower(){
+  const g = new THREE.Group();
+  const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.34,16,8), M.steelDark);
+  mast.position.y=8; mast.castShadow=true;
+  g.add(mast);
+  for(let i=0;i<3;i++){
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(2.8,0.12,0.12), M.steel);
+    arm.position.y = 11+i*1.4; arm.rotation.y = i;
+    g.add(arm);
+  }
+  const dish = new THREE.Mesh(new THREE.SphereGeometry(0.65,12,12,0,Math.PI*2,0,Math.PI/2), new THREE.MeshStandardMaterial({color:0xffffff, side:THREE.DoubleSide}));
+  dish.rotation.x = Math.PI/2.4; dish.position.set(0.5,14,0);
+  g.add(dish);
+  const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.2,8,8), new THREE.MeshStandardMaterial({color:0xff2222, emissive:0xff2222, emissiveIntensity:1}));
+  beacon.position.y = 16.2;
+  g.add(beacon);
+  g.userData.beacon = beacon;
+  return g;
+}
+function makeFence(w,d){
+  const g = new THREE.Group();
+  const postGeo = new THREE.CylinderGeometry(0.08,0.08,1.3,6);
+  const n = Math.round((w+d)*2/2.6);
+  for(let i=0;i<n;i++){
+    const t = i/n;
+    let x,z;
+    if(t<0.25){ x=-w/2+t/0.25*w; z=-d/2; }
+    else if(t<0.5){ x=w/2; z=-d/2+(t-0.25)/0.25*d; }
+    else if(t<0.75){ x=w/2-(t-0.5)/0.25*w; z=d/2; }
+    else { x=-w/2; z=d/2-(t-0.75)/0.25*d; }
+    const post = new THREE.Mesh(postGeo, M.steelDark);
+    post.position.set(x,0.65,z); post.castShadow=true;
+    g.add(post);
+  }
+  return g;
+}
+function makePoleLight(){
+  const g = new THREE.Group();
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.13,6,8), M.steelDark);
+  pole.position.y=3; pole.castShadow=true;
+  const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.22,10,10), new THREE.MeshStandardMaterial({color:0xfff2c8, emissive:0xffe28a, emissiveIntensity:1}));
+  lamp.position.y=6.1;
+  g.add(pole,lamp);
+  return g;
+}
+
+/* =========================================================
+   TUNNEL SECTION BUILDER (no rails / no carts — roads only)
+   ========================================================= */
+function addTunnelSection(group, axis, from, to, fixed, width, height, baseY, mats){
+  // axis 'x' -> tunnel runs along X at position z=fixed; axis 'z' -> runs along Z at x=fixed
+  const len = Math.abs(to-from);
+  const cx = axis==='x' ? (from+to)/2 : fixed;
+  const cz = axis==='x' ? fixed : (from+to)/2;
+  const wLen = axis==='x' ? len : width;
+  const dLen = axis==='x' ? width : len;
+
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(wLen,0.4,dLen), mats.rock);
+  floor.position.set(cx, baseY, cz); floor.receiveShadow = true;
+  group.add(floor);
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(wLen,0.4,dLen), mats.coal);
+  roof.position.set(cx, baseY+height, cz); roof.receiveShadow = true;
+  group.add(roof);
+
+  if(axis==='x'){
+    [-1,1].forEach(side=>{
+      const wall = new THREE.Mesh(new THREE.BoxGeometry(wLen,height,0.35), mats.coal);
+      wall.position.set(cx, baseY+height/2, cz+side*(width/2)); wall.receiveShadow=true;
+      group.add(wall);
+    });
+  } else {
+    [-1,1].forEach(side=>{
+      const wall = new THREE.Mesh(new THREE.BoxGeometry(0.35,height,dLen), mats.coal);
+      wall.position.set(cx+side*(width/2), baseY+height/2, cz); wall.receiveShadow=true;
+      group.add(wall);
+    });
+  }
+
+  // roof support beams + pillars every ~5.5 units
+  const nSeg = Math.max(2, Math.round(len/5.5));
+  for(let i=1;i<nSeg;i++){
+    const t = i/nSeg;
+    const bx = axis==='x' ? from+(to-from)*t : cx;
+    const bz = axis==='x' ? cz : from+(to-from)*t;
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(axis==='x'?0.35:width-0.4, 0.3, axis==='x'?width-0.4:0.35), mats.timber);
+    beam.position.set(bx, baseY+height-0.25, bz); beam.castShadow=true;
+    group.add(beam);
+    [-1,1].forEach(side=>{
+      const px = axis==='x' ? bx : bx+side*(width/2-0.45);
+      const pz = axis==='x' ? bz+side*(width/2-0.45) : bz;
+      const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.26,height,10), mats.timber);
+      pillar.position.set(px, baseY+height/2, pz); pillar.castShadow=true;
+      group.add(pillar);
+    });
+  }
+  // safety lamps
+  const lampCount = Math.max(2, Math.round(len/12));
+  for(let i=0;i<=lampCount;i++){
+    const t = i/lampCount;
+    const lx = axis==='x' ? from+(to-from)*t : cx;
+    const lz = axis==='x' ? cz : from+(to-from)*t;
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.16,8,8), new THREE.MeshStandardMaterial({color:0xfff2c8, emissive:0xffe28a, emissiveIntensity:1.1}));
+    bulb.position.set(lx, baseY+height-0.5, lz);
+    group.add(bulb);
+  }
+}
+function addChamber(group, cx, cz, w, d, height, baseY, mats, label){
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(w,0.4,d), mats.rock);
+  floor.position.set(cx, baseY, cz); floor.receiveShadow=true;
+  group.add(floor);
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(w,0.4,d), mats.coal);
+  roof.position.set(cx, baseY+height, cz);
+  group.add(roof);
+  [[-w/2,0],[w/2,0],[0,-d/2],[0,d/2]].forEach(([ox,oz],i)=>{
+    const horiz = i<2;
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(horiz?0.3:w, height, horiz?d:0.3), mats.coal);
+    wall.position.set(cx+ox, baseY+height/2, cz+oz);
+    group.add(wall);
+  });
+  // pillars grid inside chamber
+  for(let px=-1;px<=1;px++) for(let pz=-1;pz<=1;pz++){
+    if(px===0 && pz===0) continue;
+    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.32,height,10), mats.timber);
+    pillar.position.set(cx+px*w*0.28, baseY+height/2, cz+pz*d*0.28); pillar.castShadow=true;
+    group.add(pillar);
+  }
+  if(label){
+    const panel = makeTextPanel([label], 2.6,0.9,'#1D4E89','#ffffff');
+    panel.position.set(cx, baseY+height-1, cz-d/2+0.2);
+    group.add(panel);
+  }
+  return {x:cx,z:cz,w,d,height,baseY};
+}
+
+/* =========================================================
+   BUILD ONE MINE SITE (surface + underground)
+   ========================================================= */
+function buildMine(def, index){
+  const mine = { def, sensors: JSON.parse(JSON.stringify(SENSOR_TEMPLATE)),
+    hazardActive:false, hazardProgress:0, hazardTimer:null, alarmTriggered:false, selectedSensorId:null };
+  mine.sensors.forEach(s=>{ s.current=s.normal; s.prev=s.normal; s.status='NORMAL'; });
+
+  const surfaceGroup = new THREE.Group();
+  surfaceGroup.position.set(def.offset.x, 0, def.offset.z);
+  surfaceGroup.rotation.y = def.rotY;
+  worldRoot.add(surfaceGroup);
+
+  const undergroundGroup = new THREE.Group();
+  undergroundGroup.position.set(def.offset.x, tunnelY, def.offset.z);
+  undergroundGroup.rotation.y = def.rotY;
+  undergroundGroup.visible = false;
+  worldRoot.add(undergroundGroup);
+
+  /* ---- cleared mine pad ---- */
+  const pad = new THREE.Mesh(new THREE.PlaneGeometry(150,120), M.pad);
+  pad.rotation.x=-Math.PI/2; pad.position.set(-5,0.03,0); pad.receiveShadow=true;
+  surfaceGroup.add(pad);
+
+  /* ---- entrance portal + ramp ---- */
+  const entranceGroup = new THREE.Group();
+  entranceGroup.position.set(-45,0,0);
+  surfaceGroup.add(entranceGroup);
+  const ramp = new THREE.Mesh(new THREE.BoxGeometry(10,1,26), M.road);
+  ramp.rotation.x = -0.34; ramp.position.set(0,-4.2,16); ramp.receiveShadow=true;
+  entranceGroup.add(ramp);
+  [[-5],[5]].forEach(([x])=>{
+    const post = new THREE.Mesh(new THREE.BoxGeometry(1,6,1), M.steelDark);
+    post.position.set(x,-2,4); post.castShadow=true;
+    entranceGroup.add(post);
+  });
+  const lintel = new THREE.Mesh(new THREE.BoxGeometry(11,1.2,1.4), M.steelDark);
+  lintel.position.set(0,1.1,4); lintel.castShadow=true;
+  entranceGroup.add(lintel);
+  const voidMesh = new THREE.Mesh(new THREE.PlaneGeometry(9,6), new THREE.MeshBasicMaterial({color:0x050505}));
+  voidMesh.position.set(0,-1.6,4.05);
+  entranceGroup.add(voidMesh);
+  const entranceSign = makeTextPanel(['UNDERGROUND MINE','AUTHORIZED PERSONNEL','ONLY — PPE REQUIRED'],3.4,1.5,'#E08A00','#12355B');
+  entranceSign.position.set(7.5,1.4,4.1); entranceSign.rotation.y=-0.3;
+  entranceGroup.add(entranceSign);
+  const mainRoad = new THREE.Mesh(new THREE.PlaneGeometry(9,42), M.road);
+  mainRoad.rotation.x=-Math.PI/2; mainRoad.position.set(0,0.05,35);
+  surfaceGroup.add(mainRoad);
+
+  /* ---- emergency exit shaft (surface stack near entrance) + assembly point ---- */
+  const ventStack = new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.3,3,10), M.steelDark);
+  ventStack.position.set(-2,1.5,-14); ventStack.castShadow=true;
+  surfaceGroup.add(ventStack);
+  const assemblyFlag = new THREE.Group();
+  const flagPole = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,3,6), M.steelDark);
+  flagPole.position.y=1.5;
+  const flag = new THREE.Mesh(new THREE.PlaneGeometry(1.2,0.7), new THREE.MeshStandardMaterial({color:0x2878C8, side:THREE.DoubleSide}));
+  flag.position.set(0.6,2.6,0);
+  assemblyFlag.add(flagPole, flag);
+  assemblyFlag.position.set(-10,0,-16);
+  surfaceGroup.add(assemblyFlag);
+  const assemblyLabel = makeCss2dLabel('ASSEMBLY POINT');
+  assemblyLabel.position.set(0,3,0);
+  assemblyFlag.add(assemblyLabel);
+
+  /* ---- admin & maintenance buildings ---- */
+  const admin = makeBuilding(9,6,3.4);
+  admin.position.set(-28,0,22);
+  surfaceGroup.add(admin);
+  const adminLabel = makeCss2dLabel('ADMIN / CONTROL BUILDING');
+  adminLabel.position.set(0,4,0); admin.add(adminLabel);
+
+  const maint = makeBuilding(7,5,3.0,0xdfe4e8,0x52606D);
+  maint.position.set(-14,0,26);
+  surfaceGroup.add(maint);
+  const maintLabel = makeCss2dLabel('MAINTENANCE BUILDING');
+  maintLabel.position.set(0,3.6,0); maint.add(maintLabel);
+
+  /* ---- substation (fenced electrical yard) ---- */
+  const subYard = makeFence(12,10);
+  subYard.position.set(4,0,-26);
+  surfaceGroup.add(subYard);
+  for(let i=-1;i<=1;i++){
+    const trafo = new THREE.Mesh(new THREE.BoxGeometry(1.6,1.8,1.6), M.steelDark);
+    trafo.position.set(4+i*3,0.9,-26); trafo.castShadow=true;
+    surfaceGroup.add(trafo);
+  }
+  const subLabel = makeCss2dLabel('ELECTRICAL SUBSTATION');
+  subLabel.position.set(4,3,-26);
+  const subLabelHolder = new THREE.Object3D(); subLabelHolder.position.copy(subLabel.position); subLabelHolder.add(subLabel); subLabel.position.set(0,0,0);
+  surfaceGroup.add(subLabelHolder);
+
+  /* ---- comms tower + surface gateway + RK3588 ---- */
+  const tower = makeTower();
+  tower.position.set(24,0,-16);
+  surfaceGroup.add(tower);
+
+  const gatewayMesh = new THREE.Group();
+  {
+    const box = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.9,1.1), M.steelDark);
+    box.position.y=0.95; box.castShadow=true;
+    const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,1.7,6), M.steel);
+    antenna.position.set(0,2.75,0);
+    const light = new THREE.Mesh(new THREE.SphereGeometry(0.09,8,8), new THREE.MeshStandardMaterial({color:0x2878C8, emissive:0x2878C8, emissiveIntensity:1.4}));
+    light.position.set(0,2.0,0.56);
+    gatewayMesh.add(box,antenna,light);
+    gatewayMesh.userData.light = light;
+  }
+  gatewayMesh.position.set(17,0,-10);
+  surfaceGroup.add(gatewayMesh);
+  const gwLabel = makeCss2dLabel('SURFACE COMMUNICATION GATEWAY');
+  gwLabel.position.set(0,3.2,0); gatewayMesh.add(gwLabel);
+
+  const rk3588Mesh = new THREE.Group();
+  {
+    const chassis = new THREE.Mesh(new THREE.BoxGeometry(1.7,0.95,1.3), M.navy);
+    chassis.position.y=0.48; chassis.castShadow=true;
+    const panel = new THREE.Mesh(new THREE.PlaneGeometry(1.35,0.5), new THREE.MeshStandardMaterial({color:0x0d1b2a, emissive:0x2878C8, emissiveIntensity:0.5}));
+    panel.position.set(0,0.6,0.66);
+    rk3588Mesh.add(chassis,panel);
+  }
+  rk3588Mesh.position.set(20,0,-10);
+  surfaceGroup.add(rk3588Mesh);
+  const rkLabel = makeCss2dLabel('RK3588 EDGE PROCESSING');
+  rkLabel.position.set(0,1.3,0); rk3588Mesh.add(rkLabel);
+
+  /* ---- coal stockpile + conveyor ---- */
+  const stockpile = new THREE.Mesh(new THREE.ConeGeometry(9,9,20), M.coal);
+  stockpile.position.set(38,4.5,18); stockpile.castShadow=true; stockpile.receiveShadow=true;
+  surfaceGroup.add(stockpile);
+  const conveyor = new THREE.Mesh(new THREE.BoxGeometry(1.6,0.5,26), M.steel);
+  conveyor.position.set(30,4,10); conveyor.rotation.x=-0.35; conveyor.castShadow=true;
+  surfaceGroup.add(conveyor);
+  for(let i=0;i<6;i++){
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,3+i*0.5,6), M.steelDark);
+    leg.position.set(30, (1.5+i*0.25), 10-10+i*4);
+    surfaceGroup.add(leg);
+  }
+  const stockLabel = makeCss2dLabel('COAL HANDLING & STOCKPILE');
+  stockLabel.position.set(38,10,18);
+  const stockHolder = new THREE.Object3D(); stockHolder.position.copy(stockLabel.position); stockLabel.position.set(0,0,0); stockHolder.add(stockLabel);
+  surfaceGroup.add(stockHolder);
+
+  /* ---- parking / vehicles / excavator / workers ---- */
+  const parking = new THREE.Mesh(new THREE.PlaneGeometry(16,10), M.road);
+  parking.rotation.x=-Math.PI/2; parking.position.set(-22,0.04,-6);
+  surfaceGroup.add(parking);
+  [[16,10,0xC24A1E],[26,18,0xB8420F],[13,-2,0xC24A1E]].forEach(([x,z,c])=>{
+    const t = makeTruck(c); t.position.set(x,0,z); t.rotation.y = Math.random()*0.6-0.3;
+    surfaceGroup.add(t);
+  });
+  const excavator = makeExcavator();
+  excavator.position.set(24,0,6); excavator.rotation.y=-0.6;
+  surfaceGroup.add(excavator);
+  const loader = makeExcavator();
+  loader.position.set(-24,0,-4); loader.rotation.y=1.1; loader.scale.set(0.85,0.85,0.85);
+  surfaceGroup.add(loader);
+
+  const workerSpots = [[6,14],[9,17],[-20,-8],[26,-14],[18,-18],[-30,20],[35,10]];
+  workerSpots.forEach(([x,z])=>{
+    const w = makeWorker(); w.position.set(x,0,z); w.rotation.y = Math.random()*Math.PI*2;
+    surfaceGroup.add(w);
+  });
+
+  /* ---- perimeter fencing, warning signs, pole lights ---- */
+  const perim = makeFence(140,110);
+  perim.position.set(-5,0,0);
+  surfaceGroup.add(perim);
+  const gateSign = makeTextPanel(['MINE SITE '+def.id,'HARD HAT AREA'],2.6,1.1,'#12355B','#ffffff');
+  gateSign.position.set(-45,2.2,20); gateSign.rotation.y=0.5;
+  surfaceGroup.add(gateSign);
+  [[-40,30],[10,32],[40,-24],[-40,-24]].forEach(([x,z])=>{
+    const pl = makePoleLight(); pl.position.set(x,0,z);
+    surfaceGroup.add(pl);
+  });
+
+  const siteLabel = makeCss2dLabel(def.name.toUpperCase(), 'mine');
+  siteLabel.position.set(0,26,0);
+  surfaceGroup.add(siteLabel);
+
+  /* =========================================================
+     UNDERGROUND NETWORK — large branching layout, no rails/carts
+     ========================================================= */
+  const UW = 8, UH = 6; // main tunnel width/height
+  const BW = 6, BH = 5; // branch width/height
+  const mats = M;
+
+  addTunnelSection(undergroundGroup,'x',-45,42,0,UW,UH,0,mats);          // MAIN TUNNEL
+  addTunnelSection(undergroundGroup,'z',0,28,-20,BW,BH,0,mats);          // VENT BRANCH (gas)
+  addTunnelSection(undergroundGroup,'z',0,-32,-4,BW,BH,0,mats);          // WORK BRANCH (temp/vibration)
+  // deep branch ramp then horizontal run at y=-6 (humidity/tilt/displacement) — Zone B (hazard zone)
+  const deepRamp = new THREE.Mesh(new THREE.BoxGeometry(BW,0.4,10.5), mats.rock);
+  deepRamp.rotation.x = 0.5; deepRamp.position.set(16,-3,5); deepRamp.receiveShadow=true;
+  undergroundGroup.add(deepRamp);
+  addTunnelSection(undergroundGroup,'z',2,24,16,BW,BH,-6,mats);
+  // geo branch ramp then horizontal run at y=-10 (piezometer/seismic)
+  const geoRamp = new THREE.Mesh(new THREE.BoxGeometry(BW,0.4,12.6), mats.rock);
+  geoRamp.rotation.x = -0.62; geoRamp.position.set(34,-5,-6); geoRamp.receiveShadow=true;
+  undergroundGroup.add(geoRamp);
+  addTunnelSection(undergroundGroup,'z',-2,-26,34,BW,BH,-10,mats);
+
+  const workChamber = addChamber(undergroundGroup,-4,-31,11,9,BH,0,mats,'WORKING PANEL — ZONE A2');
+  const hazardChamber = addChamber(undergroundGroup,16,25,11,9,BH,-6,mats,'SUPPORT ZONE B — DEEP WORKING AREA');
+  const geoChamber = addChamber(undergroundGroup,34,-25,10,8,BH,-10,mats,'GEOLOGICAL MONITORING CHAMBER');
+
+  // ventilation duct + cables along main tunnel
+  const ventPipe = new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3,84,10), mats.pipe);
+  ventPipe.rotation.z = Math.PI/2; ventPipe.position.set(-1.5, UH-0.7, UW/2-0.6);
+  undergroundGroup.add(ventPipe);
+  const cablePts = [];
+  for(let x=-44; x<=41; x+=6){ cablePts.push(new THREE.Vector3(x, UH-1.1+Math.sin(x*0.3)*0.06, -UW/2+0.25)); }
+  const cableTube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(cablePts), 60, 0.05, 6, false), mats.cable);
+  undergroundGroup.add(cableTube);
+
+  // underground utility vehicle (rubber-tired, NOT rail-bound) replacing carts
+  function makeUtilityVehicle(){
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(2.0,0.9,1.5), M.steelDark);
+    body.position.y=0.7; body.castShadow=true;
+    const cage = new THREE.Mesh(new THREE.BoxGeometry(1.0,0.8,1.4), M.yellow);
+    cage.position.set(-0.6,1.3,0); cage.castShadow=true;
+    g.add(body,cage);
+    const wg = new THREE.CylinderGeometry(0.34,0.34,0.3,10);
+    [[-0.7,-0.7],[-0.7,0.7],[0.7,-0.7],[0.7,0.7]].forEach(([x,z])=>{
+      const w = new THREE.Mesh(wg, M.steel); w.rotation.x=Math.PI/2; w.position.set(x,0.34,z);
+      g.add(w);
+    });
+    return g;
+  }
+  [[-30,0,0],[10,0,-16],[16,-6,14]].forEach(([x,y,z])=>{
+    const uv = makeUtilityVehicle(); uv.position.set(x,y,z); uv.rotation.y=Math.random()*Math.PI;
+    undergroundGroup.add(uv);
+  });
+
+  // underground warning sign
+  const ugSign = makeTextPanel(['CAUTION','LOW CLEARANCE ZONE'],2,1,'#E08A00','#12355B');
+  ugSign.position.set(-30,2.6,-UW/2+0.25); ugSign.rotation.y=Math.PI;
+  undergroundGroup.add(ugSign);
+
+  // underground workers with helmet lamps
+  const ugWorkerSpots = [[-14,0,0.9],[8,0,-14],[16,-6,10],[34,-10,-14],[-38,0,0]];
+  ugWorkerSpots.forEach(([x,y,z])=>{
+    const uw = makeWorker(0x2878C8, 0.9); uw.position.set(x,y,z);
+    const lamp = new THREE.SpotLight(0xffffff, 3, 9, 0.5, 0.4);
+    lamp.position.set(x,y+1.6,z); lamp.target.position.set(x,y+1.4,z+1);
+    undergroundGroup.add(lamp, lamp.target, uw);
+  });
+
+  // emergency exit shaft (vertical) connecting underground to surface vent stack
+  const exitShaft = new THREE.Mesh(new THREE.BoxGeometry(2.4,14,2.4), new THREE.MeshStandardMaterial({color:0x1c1c1e}));
+  exitShaft.position.set(-2,7,-14);
+  undergroundGroup.add(exitShaft);
+  const exitLabel = makeCss2dLabel('EMERGENCY EXIT', 'mine');
+  exitLabel.position.set(0,7.5,0); exitShaft.add(exitLabel);
+
+  const assemblyLabelUG = makeCss2dLabel('ASSEMBLY POINT', 'mine');
+  assemblyLabelUG.position.set(-10,15,-16);
+  undergroundGroup.add(assemblyLabelUG);
+
+  /* ---- hazard zone overlay (Zone B) ---- */
+  const hazardZoneMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(hazardChamber.w+2, hazardChamber.height+1, hazardChamber.d+2),
+    new THREE.MeshBasicMaterial({color:0xD0342C, transparent:true, opacity:0.16, depthWrite:false})
+  );
+  hazardZoneMesh.position.set(hazardChamber.x, hazardChamber.baseY+hazardChamber.height/2, hazardChamber.z);
+  hazardZoneMesh.visible = false;
+  undergroundGroup.add(hazardZoneMesh);
+  const hazardLabel = makeCss2dLabel('⚠ HAZARD ZONE', 'crit');
+  hazardLabel.position.set(0, hazardChamber.height/2+1, 0);
+  hazardZoneMesh.add(hazardLabel);
+  hazardLabel.element.style.display = 'none';
+
+  /* ---- evacuation route (safe path from Zone B to surface assembly point) ---- */
+  const evacPts = [
+    new THREE.Vector3(16,-6,24), new THREE.Vector3(16,-6,2), new THREE.Vector3(16,-0.3,0),
+    new THREE.Vector3(-2,0,0), new THREE.Vector3(-30,0,0), new THREE.Vector3(-45,0,0),
+    new THREE.Vector3(-45,6,-6), new THREE.Vector3(-30,13,-14), new THREE.Vector3(-10,15,-16)
+  ];
+  const evacCurve = new THREE.CatmullRomCurve3(evacPts);
+  const evacTube = new THREE.Mesh(
+    new THREE.TubeGeometry(evacCurve, 90, 0.35, 8, false),
+    new THREE.MeshStandardMaterial({color:0x2E8B57, emissive:0x2E8B57, emissiveIntensity:0.8})
+  );
+  evacTube.visible = false;
+  undergroundGroup.add(evacTube);
+  const evacArrows = [];
+  for(let i=0;i<5;i++){
+    const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.5,1.1,8), new THREE.MeshStandardMaterial({color:0x7CFFB2, emissive:0x2E8B57, emissiveIntensity:1.1}));
+    arrow.userData.t = i/5; arrow.visible = false;
+    undergroundGroup.add(arrow);
+    evacArrows.push(arrow);
+  }
+
+  /* ---- sensors ---- */
+  const sensorMeshes = {};
+  mine.sensors.forEach(s=>{
+    const g = new THREE.Group();
+    const bracket = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.4,0.18), mats.steelDark);
+    bracket.position.set(0,0.5,0);
+    g.add(bracket);
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.24,0.24,0.42,12), new THREE.MeshStandardMaterial({color:0x2878C8, emissive:0x2878C8, emissiveIntensity:0.5}));
+    body.rotation.z = Math.PI/2; body.position.set(0,0.75,0); body.castShadow=true;
+    g.add(body);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.15,0.03,8,16), new THREE.MeshStandardMaterial({color:0xffffff}));
+    ring.position.copy(body.position); ring.rotation.y = Math.PI/2;
+    g.add(ring);
+    g.position.set(s.local.x, s.local.y+1.6, s.local.z);
+    g.userData.sensorId = s.id;
+    undergroundGroup.add(g);
+
+    const labelObj = makeCss2dLabel(s.name.replace(' SENSOR','')+': '+s.normal+s.unit);
+    labelObj.position.set(0,0.9,0);
+    labelObj.element.classList.add('hidden'); // hidden until underground mode
+    g.add(labelObj);
+    sensorMeshes[s.id] = { group:g, body, labelObj };
+  });
+
+  MINES.push({
+    def, sensors: mine.sensors, sensorMeshes, surfaceGroup, undergroundGroup,
+    hazardZoneMesh, hazardLabel, evacTube, evacArrows, evacCurve,
+    gatewayMesh, rk3588Mesh, tower,
+    hazardActive:false, hazardProgress:0, hazardTimer:null, alarmTriggered:false, selectedSensorId:null,
+    dataPackets: 1180+index*40, workers: def.workers,
+  });
+}
+MINE_DEFS.forEach((def,i)=> buildMine(def,i));
+
+let activeMineIndex = 0;
+function activeMine(){ return MINES[activeMineIndex]; }
+
+/* =========================================================
+   CAMERA PRESETS
+   ========================================================= */
+function regionCenter(){
+  const cx = MINE_DEFS.reduce((a,m)=>a+m.offset.x,0)/MINE_DEFS.length;
+  const cz = MINE_DEFS.reduce((a,m)=>a+m.offset.z,0)/MINE_DEFS.length;
+  return {x:cx,z:cz};
+}
+function computePreset(name){
+  const m = activeMine();
+  const off = m.def.offset;
+  switch(name){
+    case 'regional': {
+      const c = regionCenter();
+      return { pos:new THREE.Vector3(c.x+60, 780, c.z+1200), target:new THREE.Vector3(c.x, 0, c.z) };
+    }
+    case 'mineSite':
+      return { pos:new THREE.Vector3(off.x+70,55,off.z+95), target:new THREE.Vector3(off.x,6,off.z) };
+    case 'surface':
+      return { pos:new THREE.Vector3(off.x+34,20,off.z+46), target:new THREE.Vector3(off.x,3,off.z+8) };
+    case 'underground':
+      return { pos:new THREE.Vector3(off.x+9, tunnelY+9, off.z-10), target:new THREE.Vector3(off.x-6, tunnelY+2, off.z-18) };
+    case 'sensor': {
+      const s = pickFocusSensor(m);
+      const wp = new THREE.Vector3(off.x+s.local.x, tunnelY+s.local.y+1.6, off.z+s.local.z);
+      return { pos: wp.clone().add(new THREE.Vector3(3.2,2,3.6)), target: wp };
+    }
+    case 'hazard': {
+      const hz = m.hazardZoneMesh;
+      const wp = new THREE.Vector3(); hz.getWorldPosition(wp);
+      return { pos: wp.clone().add(new THREE.Vector3(10,7,10)), target: wp };
+    }
+    case 'evacuation': {
+      const wp = new THREE.Vector3(off.x-10, tunnelY+15, off.z-16);
+      return { pos: wp.clone().add(new THREE.Vector3(18,10,18)), target: new THREE.Vector3(off.x, tunnelY+2, off.z) };
+    }
+  }
+}
+function pickFocusSensor(m){
+  return m.sensors.find(s=>s.status!=='NORMAL') || m.sensors[0];
+}
+const defaultCam = { pos: camera.position.clone(), target: controls.target.clone() };
+let camAnim = null;
+function flyTo(posVec, targetVec, duration=1200){
+  camAnim = { startPos: camera.position.clone(), startTarget: controls.target.clone(),
+    endPos: posVec.clone(), endTarget: targetVec.clone(), t0: performance.now(), duration };
+}
+function easeInOut(t){ return t<0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+document.querySelectorAll('#camPresets button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#camPresets button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const name = btn.dataset.preset;
+    const p = computePreset(name);
+    flyTo(p.pos, p.target);
+    if(name==='regional') scene.fog = null;
+    else scene.fog = new THREE.Fog(0xAFC7E0, 60, 420);
+    if(name==='underground' || name==='sensor' || name==='hazard' || name==='evacuation') setMode('underground');
+    if(name==='surface' || name==='mineSite') setMode('surface');
+  });
+});
+document.getElementById('resetCamBtn').addEventListener('click', ()=>{
+  flyTo(defaultCam.pos, defaultCam.target);
+  hideSensorCard();
+});
+
+/* =========================================================
+   MINE SELECTOR
+   ========================================================= */
+function selectMine(idx, fly=true){
+  activeMineIndex = idx;
+  document.querySelectorAll('#mineSelect button').forEach((b,i)=> b.classList.toggle('active', i===idx));
+  document.getElementById('dashTitle').textContent = 'LIVE MONITORING — ' + MINES[idx].def.name.toUpperCase();
+  document.getElementById('gwMineName').textContent = MINES[idx].def.name.toUpperCase() + ' — EDGE NODE';
+  document.getElementById('alMine').textContent = MINES[idx].def.name;
+  rebuildParamList();
+  updateDashboard();
+  updateRiskUI();
+  updateSystemFields();
+  MINES.forEach((mm,i)=>{ mm.undergroundGroup.visible = (i===idx) && (currentMode==='underground'); });
+  if(fly){ const p = computePreset('mineSite'); flyTo(p.pos,p.target); scene.fog = new THREE.Fog(0xAFC7E0,60,420); }
+}
+document.querySelectorAll('#mineSelect button').forEach((btn,i)=>{
+  btn.addEventListener('click', ()=> selectMine(i));
+});
+
+/* =========================================================
+   SURFACE / UNDERGROUND MODE
+   ========================================================= */
+let currentMode = 'surface';
+function setMode(mode){
+  currentMode = mode;
+  document.getElementById('btnSurface').classList.toggle('active', mode==='surface');
+  document.getElementById('btnUnderground').classList.toggle('active', mode==='underground');
+  MINES.forEach((mm,i)=>{
+    mm.undergroundGroup.visible = (mode==='underground') && (i===activeMineIndex);
+  });
+  Object.values(activeMine().sensorMeshes).forEach(sm=>{
+    sm.labelObj.element.classList.toggle('hidden', mode!=='underground');
+  });
+  activeMine().hazardLabel.element.style.display = (mode==='underground' && activeMine().hazardZoneMesh.visible) ? 'block' : 'none';
+  document.getElementById('evacLegend').style.display = (mode==='underground' && activeMine().evacTube.visible) ? 'block' : 'none';
+}
+document.getElementById('btnSurface').addEventListener('click', ()=> setMode('surface'));
+document.getElementById('btnUnderground').addEventListener('click', ()=> setMode('underground'));
+
+/* =========================================================
+   3D / GIS VIEW TOGGLE
+   ========================================================= */
+let gisVisible = false;
+document.getElementById('btn3D').addEventListener('click', ()=> setView('3d'));
+document.getElementById('btnGIS').addEventListener('click', ()=> setView('gis'));
+function setView(mode){
+  gisVisible = (mode==='gis');
+  document.getElementById('canvas3d').style.display = mode==='3d'?'block':'none';
+  document.getElementById('gisCanvas').style.display = mode==='gis'?'block':'none';
+  labelRenderer.domElement.style.display = mode==='3d'?'block':'none';
+  document.getElementById('btn3D').classList.toggle('active', mode==='3d');
+  document.getElementById('btnGIS').classList.toggle('active', mode==='gis');
+  document.getElementById('modeToggle').style.display = mode==='3d'?'flex':'none';
+  if(mode==='gis') drawGis();
+}
+document.querySelectorAll('#navlinks button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    if(btn.dataset.target==='3d') setView('3d'); else setView('gis');
+  });
+});
+
+/* =========================================================
+   SENSOR INTERACTION
+   ========================================================= */
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+function onPointerDown(ev){
+  if(gisVisible || currentMode!=='underground') return;
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((ev.clientX-rect.left)/rect.width)*2-1;
+  mouse.y = -((ev.clientY-rect.top)/rect.height)*2+1;
+  raycaster.setFromCamera(mouse, camera);
+  const meshes = Object.values(activeMine().sensorMeshes).map(o=>o.body);
+  const hits = raycaster.intersectObjects(meshes);
+  if(hits.length){
+    const entry = Object.values(activeMine().sensorMeshes).find(o=>o.body===hits[0].object);
+    selectSensor(entry.group.userData.sensorId);
+  }
+}
+renderer.domElement.addEventListener('pointerdown', onPointerDown);
+
+function selectSensor(id){
+  const m = activeMine();
+  m.selectedSensorId = id;
+  const s = m.sensors.find(x=>x.id===id);
+  const meshInfo = m.sensorMeshes[id];
+  const worldPos = new THREE.Vector3();
+  meshInfo.body.getWorldPosition(worldPos);
+  flyTo(worldPos.clone().add(new THREE.Vector3(3.4,2.0,4.2)), worldPos, 1000);
+  showSensorCard(s);
+  highlightDashboardParam(id);
+}
+function showSensorCard(s){
+  const card = document.getElementById('sensorInfoCard');
+  card.style.display = 'block';
+  document.getElementById('sicName').textContent = s.name;
+  document.getElementById('sicLocation').textContent = s.loc;
+  document.getElementById('sicValue').textContent = s.current.toFixed(s.dp)+' '+s.unit;
+  const statusEl = document.getElementById('sicStatus');
+  statusEl.textContent = s.status;
+  statusEl.style.color = s.status==='CRITICAL' ? '#D0342C' : s.status==='WARNING' ? '#E08A00' : '#2E8B57';
+  document.getElementById('sicTime').textContent = 'just now';
+}
+function hideSensorCard(){
+  document.getElementById('sensorInfoCard').style.display='none';
+  activeMine().selectedSensorId = null;
+  document.querySelectorAll('.param').forEach(p=>p.classList.remove('active'));
+}
+document.getElementById('closeSensorCard').addEventListener('click', hideSensorCard);
+
+/* =========================================================
+   RENDER LOOP
+   ========================================================= */
+let lastTime = performance.now();
+function animate(){
+  requestAnimationFrame(animate);
+  const now = performance.now();
+  const dt = (now-lastTime)/1000; lastTime = now;
+
+  if(camAnim){
+    const t = Math.min(1, (now-camAnim.t0)/camAnim.duration);
+    const e = easeInOut(t);
+    camera.position.lerpVectors(camAnim.startPos, camAnim.endPos, e);
+    controls.target.lerpVectors(camAnim.startTarget, camAnim.endTarget, e);
+    if(t>=1) camAnim=null;
+  }
+  controls.update();
+
+  MINES.forEach(mm=>{
+    if(mm.tower.userData.beacon) mm.tower.userData.beacon.material.emissiveIntensity = 0.6+Math.sin(now*0.006)*0.5;
+    if(mm.gatewayMesh.userData.light) mm.gatewayMesh.userData.light.material.emissiveIntensity = 1.0+Math.sin(now*0.008)*0.6;
+  });
+
+  const m = activeMine();
+  if(m.evacTube.visible){
+    m.evacArrows.forEach(arrow=>{
+      arrow.userData.t += dt*0.18;
+      if(arrow.userData.t>1) arrow.userData.t -= 1;
+      const pos = m.evacCurve.getPoint(arrow.userData.t);
+      const tangent = m.evacCurve.getTangent(arrow.userData.t);
+      arrow.position.copy(pos);
+      arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), tangent.clone().normalize());
+      arrow.visible = true;
+    });
+  }
+  if(m.hazardZoneMesh.visible){
+    const pulse = 0.12+Math.sin(now*0.006)*0.06;
+    m.hazardZoneMesh.material.opacity = pulse;
+  }
+  m.sensors.forEach(s=>{
+    const mi = m.sensorMeshes[s.id];
+    if(s.status==='CRITICAL' || s.status==='WARNING'){
+      mi.body.material.emissiveIntensity = 0.6+Math.sin(now*0.01)*0.5;
+    } else {
+      mi.body.material.emissiveIntensity = 0.5;
+    }
+  });
+
+  const nodeIdx = Math.floor((now*0.001*(1+m.hazardProgress*2))%8);
+  document.querySelectorAll('#dataflow .fnode').forEach((el,i)=>{
+    el.classList.toggle('pulse', i===nodeIdx);
+  });
+
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+}
+resize();
+window.addEventListener('resize', resize);
+animate();
+
+/* =========================================================
+   DASHBOARD (DOM side)
+   ========================================================= */
+const paramList = document.getElementById('paramList');
+function rebuildParamList(){
+  paramList.innerHTML = '';
+  activeMine().sensors.forEach(s=>{
+    const div = document.createElement('div');
+    div.className='param';
+    div.dataset.id = s.id;
+    div.innerHTML = `
+      <div class="pname">${s.name}</div>
+      <div><span class="pval" id="val-${s.id}">${s.current.toFixed(s.dp)}</span><span class="punit">${s.unit}</span><span class="trend flat" id="trend-${s.id}">▬</span></div>
+      <div class="pstatus NORMAL" id="status-${s.id}">NORMAL</div>
+    `;
+    div.addEventListener('click', ()=> selectSensor(s.id));
+    paramList.appendChild(div);
+  });
+}
+rebuildParamList();
+
+function highlightDashboardParam(id){
+  document.querySelectorAll('.param').forEach(p=>p.classList.toggle('active', p.dataset.id===id));
+}
+
+function updateDashboard(){
+  const m = activeMine();
+  m.sensors.forEach(s=>{
+    const valEl = document.getElementById('val-'+s.id);
+    const statusEl = document.getElementById('status-'+s.id);
+    const trendEl = document.getElementById('trend-'+s.id);
+    if(!valEl) return;
+    valEl.textContent = s.current.toFixed(s.dp);
+    statusEl.textContent = s.status;
+    statusEl.className = 'pstatus '+s.status;
+    const diff = s.current - s.prev;
+    trendEl.className = 'trend ' + (diff>0.0005?'up':diff<-0.0005?'down':'flat');
+    trendEl.textContent = diff>0.0005?'▲':diff<-0.0005?'▼':'▬';
+
+    const mi = m.sensorMeshes[s.id];
+    mi.labelObj.element.textContent = s.name.replace(' SENSOR','') + ': ' + s.current.toFixed(s.dp) + s.unit;
+    mi.labelObj.element.className = 'css2dlabel' + (currentMode!=='underground'?' hidden':'') + (s.status==='WARNING'?' warn':s.status==='CRITICAL'?' crit':'');
+    const col = colorForStatus(s.status);
+    mi.body.material.color.setHex(col);
+    mi.body.material.emissive.setHex(col);
+
+    if(m.selectedSensorId===s.id) showSensorCard(s);
+  });
+}
+updateDashboard();
+
+function updateSystemFields(){
+  const m = activeMine();
+  const activeAlerts = m.sensors.filter(s=>s.status!=='NORMAL').length;
+  document.getElementById('sgSensors').textContent = (8-activeAlerts>=0? (8-m.sensors.filter(s=>s.status==='CRITICAL').length) : 8) + ' / 8';
+  document.getElementById('sgAlerts').textContent = activeAlerts;
+  document.getElementById('sgWorkers').textContent = m.workers + (m.def===MINES[0].def?0:0);
+  document.getElementById('sgPackets').textContent = Math.round(m.dataPackets).toLocaleString();
+  document.getElementById('sgZones').textContent = m.def.zones;
+  const latency = Math.round(32 + m.hazardProgress*40);
+  document.getElementById('sgLatency').textContent = latency+' ms';
+  document.getElementById('rkLatency').textContent = latency+' ms';
+  document.getElementById('rkReceived').textContent = Math.round(m.dataPackets).toLocaleString()+' pkt';
+
+  const commEl = document.getElementById('sgComm');
+  if(m.hazardProgress>CRIT_FRAC){ commEl.textContent='LoRa CONGESTED'; commEl.className='sVal crit'; }
+  else if(m.hazardProgress>WARN_FRAC){ commEl.textContent='LoRa ELEVATED'; commEl.className='sVal warn'; }
+  else { commEl.textContent='LoRa STABLE'; commEl.className='sVal ok'; }
+
+  const evacEl = document.getElementById('sgEvac');
+  if(m.hazardProgress>=CRIT_FRAC){ evacEl.textContent='EVACUATION ADVISED'; evacEl.className='sVal crit'; }
+  else if(m.hazardProgress>=WARN_FRAC){ evacEl.textContent='STANDBY'; evacEl.className='sVal warn'; }
+  else { evacEl.textContent='NOT REQUIRED'; evacEl.className='sVal ok'; }
+
+  const statusEl = document.getElementById('sgStatus');
+  if(m.hazardProgress>=CRIT_FRAC){ statusEl.textContent='CRITICAL'; statusEl.className='sVal crit'; }
+  else if(m.hazardProgress>=WARN_FRAC){ statusEl.textContent='WARNING'; statusEl.className='sVal warn'; }
+  else { statusEl.textContent='ONLINE'; statusEl.className='sVal ok'; }
+}
+updateSystemFields();
+
+/* =========================================================
+   GIS VIEW — regional map showing widely separated mine sites
+   ========================================================= */
+const gisCanvas = document.getElementById('gisCanvas');
+const gctx = gisCanvas.getContext('2d');
+function resizeGis(){
+  gisCanvas.width = viewport.clientWidth;
+  gisCanvas.height = viewport.clientHeight;
+}
+function worldToGis(wx, wz, W, H){
+  // map world coords (centered near 0..1000 range) to canvas with generous margins so separation reads clearly
+  const minX = Math.min(...MINE_DEFS.map(m=>m.offset.x))-260, maxX = Math.max(...MINE_DEFS.map(m=>m.offset.x))+260;
+  const minZ = Math.min(...MINE_DEFS.map(m=>m.offset.z))-260, maxZ = Math.max(...MINE_DEFS.map(m=>m.offset.z))+260;
+  const fx = (wx-minX)/(maxX-minX), fz = (wz-minZ)/(maxZ-minZ);
+  return { x: 60+fx*(W-120), y: 60+fz*(H-120) };
+}
+let gisClickTargets = [];
+function drawGis(){
+  resizeGis();
+  const W = gisCanvas.width, H = gisCanvas.height;
+  gctx.fillStyle = '#EAF1F9'; gctx.fillRect(0,0,W,H);
+  gctx.strokeStyle = '#d3e0ee'; gctx.lineWidth=1;
+  for(let x=0;x<W;x+=40){ gctx.beginPath();gctx.moveTo(x,0);gctx.lineTo(x,H);gctx.stroke(); }
+  for(let y=0;y<H;y+=40){ gctx.beginPath();gctx.moveTo(0,y);gctx.lineTo(W,y);gctx.stroke(); }
+
+  gctx.fillStyle = '#12355B'; gctx.font='bold 14px Arial'; gctx.textAlign='left';
+  gctx.fillText('REGIONAL MINING GIS — 3 INDEPENDENT MINE SITES (WIDELY SEPARATED)', 20, 26);
+
+  // regional roads
+  gctx.strokeStyle = '#8b95a3'; gctx.lineWidth = 4; gctx.setLineDash([]);
+  const pA = worldToGis(MINE_DEFS[0].offset.x, MINE_DEFS[0].offset.z, W, H);
+  const pB = worldToGis(MINE_DEFS[1].offset.x, MINE_DEFS[1].offset.z, W, H);
+  const pC = worldToGis(MINE_DEFS[2].offset.x, MINE_DEFS[2].offset.z, W, H);
+  [[pA,pB],[pA,pC]].forEach(([p0,p1])=>{
+    gctx.beginPath(); gctx.moveTo(p0.x,p0.y); gctx.lineTo(p1.x,p1.y); gctx.stroke();
+  });
+  // distance labels
+  function distLabel(p0,p1,km){
+    const mx=(p0.x+p1.x)/2, my=(p0.y+p1.y)/2;
+    gctx.fillStyle='#52606D'; gctx.font='11px Arial';
+    gctx.fillText('~'+km+' km separation', mx-45, my-6);
+  }
+  distLabel(pA,pB,14);
+  distLabel(pA,pC,13);
+
+  gisClickTargets = [];
+  MINES.forEach((mm,i)=>{
+    const p = worldToGis(mm.def.offset.x, mm.def.offset.z, W, H);
+    const boundary = 46;
+    gctx.strokeStyle = i===activeMineIndex ? '#2878C8' : '#1D4E89';
+    gctx.lineWidth = i===activeMineIndex? 3:2;
+    gctx.setLineDash([6,4]);
+    gctx.strokeRect(p.x-boundary, p.y-boundary, boundary*2, boundary*2);
+    gctx.setLineDash([]);
+
+    // hazard zone highlight
+    if(mm.hazardZoneMesh.visible){
+      gctx.fillStyle='rgba(208,52,44,0.18)';
+      gctx.fillRect(p.x-boundary, p.y-boundary, boundary*2, boundary*2);
+      gctx.strokeStyle='#D0342C'; gctx.lineWidth=2;
+      gctx.strokeRect(p.x-14,p.y-14,28,28);
+    }
+    if(mm.evacTube.visible){
+      gctx.strokeStyle='#2E8B57'; gctx.lineWidth=2; gctx.setLineDash([4,3]);
+      gctx.beginPath(); gctx.moveTo(p.x-14,p.y-8); gctx.lineTo(p.x-boundary+6,p.y-boundary+6); gctx.stroke();
+      gctx.setLineDash([]);
+    }
+
+    gctx.fillStyle = i===activeMineIndex ? '#2878C8' : '#12355B';
+    gctx.beginPath(); gctx.arc(p.x,p.y,9,0,Math.PI*2); gctx.fill();
+    gctx.strokeStyle='#fff'; gctx.lineWidth=2; gctx.stroke();
+    gctx.fillStyle='#12355B'; gctx.font='bold 12px Arial'; gctx.textAlign='center';
+    gctx.fillText(mm.def.name, p.x, p.y-boundary-10);
+    gctx.font='10px Arial'; gctx.fillStyle='#52606D';
+    gctx.fillText('Zones: '+mm.def.zones+'  |  Workers: '+mm.workers, p.x, p.y+boundary+16);
+    gctx.textAlign='left';
+
+    gisClickTargets.push({x:p.x,y:p.y,r:boundary,index:i});
+  });
+
+  if(gisVisible) requestAnimationFrame(drawGis);
+}
+gisCanvas.addEventListener('click', (ev)=>{
+  const rect = gisCanvas.getBoundingClientRect();
+  const x = ev.clientX-rect.left, y = ev.clientY-rect.top;
+  const hit = gisClickTargets.find(t=> Math.hypot(x-t.x,y-t.y) < t.r);
+  if(hit){ selectMine(hit.index, false); setView('3d'); const p=computePreset('mineSite'); flyTo(p.pos,p.target); scene.fog=new THREE.Fog(0xAFC7E0,60,420); }
+});
+
+/* =========================================================
+   HAZARD SIMULATION / AI-ML / ALARM
+   ========================================================= */
+const btnHazard = document.getElementById('btnHazard');
+const btnMute = document.getElementById('btnMute');
+const btnReset = document.getElementById('btnReset');
+const riskbarInner = document.getElementById('riskbarInner');
+const riskval = document.getElementById('riskval');
+const riskLevelLabel = document.getElementById('riskLevelLabel');
+const riskclassval = document.getElementById('riskclassval');
+const aitext = document.getElementById('aitext');
+const sysstatus = document.getElementById('sysstatus');
+const flashBorder = document.getElementById('flashBorder');
+const alertOverlay = document.getElementById('alertOverlay');
+let muted = false;
+
+let audioCtx = null, oscA=null, gainNode=null, lfo=null;
+function ensureAudio(){
+  if(audioCtx) return;
+  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  gainNode = audioCtx.createGain(); gainNode.gain.value = 0; gainNode.connect(audioCtx.destination);
+  oscA = audioCtx.createOscillator(); oscA.type='sawtooth'; oscA.frequency.value = 500;
+  lfo = audioCtx.createOscillator(); lfo.type='sine'; lfo.frequency.value = 1.4;
+  const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 220;
+  lfo.connect(lfoGain); lfoGain.connect(oscA.frequency); oscA.connect(gainNode);
+  oscA.start(); lfo.start();
+}
+function startAlarm(){
+  ensureAudio();
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  if(!muted) gainNode.gain.linearRampToValueAtTime(0.16, audioCtx.currentTime+0.3);
+  btnMute.disabled = false;
+}
+function stopAlarm(){
+  if(gainNode) gainNode.gain.linearRampToValueAtTime(0, (audioCtx?audioCtx.currentTime:0)+0.2);
+  btnMute.disabled = true; muted = false; btnMute.textContent = 'MUTE ALARM';
+}
+btnMute.addEventListener('click', ()=>{
+  muted = !muted;
+  if(gainNode && audioCtx) gainNode.gain.linearRampToValueAtTime(muted?0:0.16, audioCtx.currentTime+0.15);
+  btnMute.textContent = muted ? 'UNMUTE ALARM' : 'MUTE ALARM';
+});
+
+function setSystemStatus(level){
+  sysstatus.className = level;
+  if(level==='ok') sysstatus.textContent = '● SYSTEM ONLINE';
+  else if(level==='warn') sysstatus.textContent = '⚠ SYSTEM WARNING';
+  else sysstatus.textContent = '🔴 CRITICAL HAZARD';
+}
+
+function updateRiskUI(){
+  const m = activeMine();
+  let level, color, text, cls;
+  if(m.hazardProgress < 0.25){ level='LOW'; color='#2E8B57'; text='No abnormal pattern detected across the 8-sensor array.'; cls='None'; }
+  else if(m.hazardProgress < 0.55){ level='MEDIUM'; color='#E0A800'; text='Multi-sensor abnormal pattern detected — combining displacement, humidity and tilt trends.'; cls='Structural (early)'; }
+  else if(m.hazardProgress < 0.82){ level='HIGH'; color='#E08A00'; text='Potential structural instability identified in Zone B — displacement, piezometer and vibration correlated.'; cls='Structural / Gas Risk'; }
+  else { level='CRITICAL'; color='#D0342C'; text='Structural instability confirmed — evacuation of Zone B advised.'; cls='Structural / Seismic Risk'; }
+  riskval.textContent = Math.round(8+m.hazardProgress*92)+'%';
+  riskLevelLabel.textContent = level;
+  riskbarInner.style.width = Math.round(8+m.hazardProgress*92)+'%';
+  riskbarInner.style.background = color;
+  riskclassval.textContent = cls;
+  aitext.textContent = text;
+
+  if(level==='LOW') setSystemStatus('ok');
+  else if(level==='MEDIUM') setSystemStatus('warn');
+  else setSystemStatus('crit');
+
+  m.hazardZoneMesh.visible = m.hazardProgress >= WARN_FRAC;
+  m.hazardLabel.element.style.display = (currentMode==='underground' && m.hazardZoneMesh.visible) ? 'block' : 'none';
+  const showEvac = m.hazardProgress >= 0.55;
+  m.evacTube.visible = showEvac;
+  m.evacArrows.forEach(a=> a.visible = showEvac);
+  document.getElementById('evacLegend').style.display = (currentMode==='underground' && showEvac) ? 'block' : 'none';
+
+  if((level==='HIGH'||level==='CRITICAL') && !m.alarmTriggered){
+    m.alarmTriggered = true;
+    startAlarm();
+    showAlert(level);
+    flashBorder.classList.add('on');
+  }
+  updateSystemFields();
+}
+
+function showAlert(severity){
+  const m = activeMine();
+  document.getElementById('alMine').textContent = m.def.name;
+  document.getElementById('alSeverity').textContent = severity;
+  document.getElementById('alSeverity').style.color = severity==='CRITICAL' ? '#D0342C':'#E08A00';
+  document.getElementById('alAction').textContent = severity==='CRITICAL' ? 'Evacuate affected zone immediately' : 'Prepare for possible evacuation';
+  const now = new Date();
+  document.getElementById('alTime').textContent = now.toLocaleTimeString('en-GB');
+  alertOverlay.style.display = 'flex';
+}
+document.getElementById('closeAlertBtn').addEventListener('click', ()=>{ alertOverlay.style.display='none'; });
+
+btnHazard.addEventListener('click', ()=> triggerHazard());
+function triggerHazard(){
+  const m = activeMine();
+  if(m.hazardActive) return;
+  ensureAudio();
+  m.hazardActive = true;
+  btnHazard.disabled = true;
+  btnHazard.textContent = 'HAZARD DEVELOPING...';
+  const duration = 6500;
+  const t0 = performance.now();
+  if(m.hazardTimer) clearInterval(m.hazardTimer);
+  m.hazardTimer = setInterval(()=>{
+    const t = Math.min(1, (performance.now()-t0)/duration);
+    m.hazardProgress = t;
+    m.dataPackets += 14 + t*30;
+    m.sensors.forEach(s=>{
+      s.prev = s.current;
+      const eased = t<1 ? (1-Math.pow(1-t,2)) : 1;
+      const jitter = (Math.random()-0.5)*(s.hazard-s.normal)*0.02;
+      s.current = s.normal + (s.hazard-s.normal)*eased + jitter;
+      s.status = statusFor(s, s.current);
+    });
+    updateDashboard();
+    updateRiskUI();
+    if(t>=1){
+      clearInterval(m.hazardTimer);
+      btnHazard.textContent = 'HAZARD ACTIVE — RESET TO CLEAR';
+    }
+  }, 150);
+}
+
+btnReset.addEventListener('click', ()=> resetActiveMine());
+function resetActiveMine(){
+  const m = activeMine();
+  m.hazardActive = false;
+  m.hazardProgress = 0;
+  if(m.hazardTimer) clearInterval(m.hazardTimer);
+  m.sensors.forEach(s=>{ s.prev=s.current; s.current=s.normal; s.status='NORMAL'; });
+  updateDashboard();
+  updateRiskUI();
+  m.alarmTriggered = false;
+  stopAlarm();
+  alertOverlay.style.display = 'none';
+  flashBorder.classList.remove('on');
+  btnHazard.disabled = false;
+  btnHazard.textContent = 'SIMULATE HAZARD';
+  hideSensorCard();
+}
+
+/* =========================================================
+   PRESENTATION / DEMO MODE
+   ========================================================= */
+const btnDemo = document.getElementById('btnDemo');
+const demoBanner = document.getElementById('demoBanner');
+let demoRunning = false, demoTimers = [];
+function clearDemo(){ demoTimers.forEach(t=>clearTimeout(t)); demoTimers=[]; }
+btnDemo.addEventListener('click', ()=>{
+  if(demoRunning){ demoRunning=false; clearDemo(); demoBanner.style.display='none'; btnDemo.textContent='START PRESENTATION MODE'; return; }
+  demoRunning = true; btnDemo.textContent='STOP PRESENTATION MODE'; demoBanner.style.display='block';
+  resetActiveMine();
+  const seq = [
+    ()=>{ setView('3d'); const p=computePreset('regional'); scene.fog=null; flyTo(p.pos,p.target,1600); },
+    ()=>{ selectMine(0); const p=computePreset('mineSite'); scene.fog=new THREE.Fog(0xAFC7E0,60,420); flyTo(p.pos,p.target,1400); },
+    ()=>{ setMode('surface'); const p=computePreset('surface'); flyTo(p.pos,p.target,1400); },
+    ()=>{ setMode('underground'); const p=computePreset('underground'); flyTo(p.pos,p.target,1400); },
+    ()=>{ const p=computePreset('sensor'); flyTo(p.pos,p.target,1300); },
+    ()=>{ triggerHazard(); },
+    ()=>{ const p=computePreset('hazard'); flyTo(p.pos,p.target,1300); },
+    ()=>{ const p=computePreset('evacuation'); flyTo(p.pos,p.target,1300); },
+    ()=>{ setView('gis'); },
+    ()=>{ demoRunning=false; btnDemo.textContent='START PRESENTATION MODE'; demoBanner.style.display='none'; },
+  ];
+  let delay = 200;
+  const gaps = [200,2600,2400,2400,2200,2200,7200,2600,2600,4000];
+  seq.forEach((fn,i)=>{ delay += gaps[i]; demoTimers.push(setTimeout(fn, delay)); });
+});
+
+selectMine(0, false);
+setMode('surface');
+updateRiskUI();
+</script>
+</body>
+</html>
